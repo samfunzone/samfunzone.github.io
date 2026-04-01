@@ -1,0 +1,11 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #ffecd2);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
