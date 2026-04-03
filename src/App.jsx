@@ -9,6 +9,9 @@ import SquishyStuff  from './components/SquishyStuff';
 import MakingBoba      from './components/MakingBoba';
 import MakingYummyFood from './components/MakingYummyFood';
 import DressingDolls   from './components/DressingDolls';
+import MagicLoops      from './components/MagicLoops';
+import MakingYourRoom  from './components/MakingYourRoom';
+import EnchantedGarden from './components/EnchantedGarden';
 
 const TABS = [
   { id: 'whack',    label: '🦔 Whack-a-Mole',   component: <WhackAMole /> },
@@ -20,6 +23,9 @@ const TABS = [
   { id: 'boba',     label: '🧋 Making Boba',       component: <MakingBoba /> },
   { id: 'food',     label: '🍽️ Yummy Food',        component: <MakingYummyFood /> },
   { id: 'dolls',    label: '🪆 Dressing Dolls',    component: <DressingDolls /> },
+  { id: 'loops',    label: '✨ Magic Loops',        component: <MagicLoops /> },
+  { id: 'room',     label: '🏠 My Room',            component: <MakingYourRoom /> },
+  { id: 'garden',   label: '🌸 Enchanted Garden',   component: <EnchantedGarden /> },
 ];
 
 export default function App() {

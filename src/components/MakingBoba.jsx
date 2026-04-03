@@ -32,7 +32,7 @@ const STEPS = ['size', 'tea', 'toppings', 'customize', 'shake', 'enjoy'];
 let pid = 0;
 
 /* ── Cup SVG ── */
-function BobaViz({ size, tea, pearls, ice, sweetness, shaking, done }) {
+function BobaViz({ size, tea, pearls, ice, sweetness, shaking, done, pearlPositions, icePositions }) {
   const sc = (SIZES.find(s => s.id === size) || SIZES[1]).scale;
   const W = 160, H = 310;
   // Cup path (trapezoid, wider top)
@@ -43,16 +43,21 @@ function BobaViz({ size, tea, pearls, ice, sweetness, shaking, done }) {
   const teaY = tea ? 80 : H;
   const teaH = H - teaY;
 
-  // Ice blocks
-  const iceBlocks = ice === 'none' ? [] : ice === 'normal'
+  // Ice blocks — use shuffled positions after shaking, fixed grid before
+  const defaultIce = ice === 'none' ? [] : ice === 'normal'
     ? [[30,100],[80,110],[50,160],[100,150]]
     : [[25,95],[65,105],[105,95],[35,155],[80,165],[110,150],[55,215],[95,200]];
+  const iceBlocks = icePositions ?? defaultIce;
 
-  // Pearl grid — 5 per row, centered inside the cup (cup interior x: ~42–118 at bottom)
-  const pearlRows = [];
-  pearls.forEach((p, i) => {
+  // Pearl grid — use shuffled positions after shaking, fixed grid before
+  const pearlRows = pearls.map((p, i) => {
+    if (pearlPositions) {
+      const pos = pearlPositions[i];
+      if (!pos) return null; // safety: fewer slots than pearls
+      return { ...p, cx: pos.cx, cy: pos.cy };
+    }
     const row = Math.floor(i / 5), col = i % 5;
-    pearlRows.push({ ...p, cx: 48 + col * 16, cy: 268 - row * 20 });
+    return { ...p, cx: 48 + col * 16, cy: 268 - row * 20 };
   });
 
   return (
@@ -96,7 +101,7 @@ function BobaViz({ size, tea, pearls, ice, sweetness, shaking, done }) {
           ))}
 
           {/* Pearls / toppings */}
-          {pearlRows.map(p => p.square
+          {pearlRows.filter(Boolean).map(p => p.square
             ? <rect key={p.id} x={p.cx - p.r} y={p.cy - p.r}
                     width={p.r * 2} height={p.r * 2} rx="3"
                     fill={p.color} stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" />
@@ -143,23 +148,67 @@ export default function MakingBoba() {
   const [activeTop, setActiveTop] = useState(TOPPINGS[0]);
   const [sweetness, setSweetness] = useState(75);
   const [ice,       setIce]       = useState('normal');
-  const [shaking,   setShaking]   = useState(false);
+  const [shaking,       setShaking]       = useState(false);
+  const [pearlPositions, setPearlPositions] = useState(null);
+  const [icePositions,   setIcePositions]   = useState(null);
 
   const done = step === 5;
 
   const addPearl = () => {
     if (pearls.length >= 35) return;
-    setPearls(p => [...p, { id: pid++, ...activeTop }]);
+    const toAdd = Math.min(5, 35 - pearls.length);
+    setPearls(p => [...p, ...Array.from({ length: toAdd }, () => ({ id: pid++, ...activeTop }))]);
   };
 
   const shake = () => {
     setShaking(true);
+
+    // Generate every valid pearl-sized slot in a dense grid across the whole
+    // cup, then pick n at random — guarantees no empty holes.
+    // STEP=16 ensures we always have ≥35 slots (the pearl cap).
+    const STEP = 16;
+    const Y_TOP = 94, Y_BOT = 265;
+    const allSlots = [];
+    for (let cy = Y_TOP + STEP / 2; cy <= Y_BOT; cy += STEP) {
+      const t  = Math.max(0, Math.min(1, (cy - 40) / 242));
+      const lx = 22 + 18 * t + 12;
+      const rx = 138 - 18 * t - 12;
+      for (let cx = lx + STEP / 2; cx <= rx - STEP / 2; cx += STEP) {
+        allSlots.push({ cx, cy });
+      }
+    }
+    for (let i = allSlots.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allSlots[i], allSlots[j]] = [allSlots[j], allSlots[i]];
+    }
+    // clamp in case cup geometry yields fewer slots than pearls
+    setPearlPositions(allSlots.slice(0, Math.min(pearls.length, allSlots.length)));
+
+    // Ice: same approach with a larger step sized for the 28×22 ice block
+    const iceCount = ice === 'none' ? 0 : ice === 'normal' ? 4 : 8;
+    const ICE_STEP = 32;
+    const iceSlots = [];
+    for (let iy = Y_TOP + ICE_STEP / 2; iy <= Y_BOT; iy += ICE_STEP) {
+      const t  = Math.max(0, Math.min(1, (iy - 40) / 242));
+      const lx = 22 + 18 * t + 14;
+      const rx = 138 - 18 * t - 42; // 28px block width + margin
+      for (let ix = lx; ix <= rx; ix += ICE_STEP) {
+        iceSlots.push([ix, iy]);
+      }
+    }
+    for (let i = iceSlots.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [iceSlots[i], iceSlots[j]] = [iceSlots[j], iceSlots[i]];
+    }
+    setIcePositions(iceSlots.slice(0, Math.min(iceCount, iceSlots.length)));
+
     setTimeout(() => { setShaking(false); setStep(5); launchConfetti(window.innerWidth/2, 200, 60); }, 1800);
   };
 
   const reset = () => {
     setStep(0); setSize(null); setTea(null);
-    setPearls([]); setSweetness(75); setIce('normal'); setShaking(false);
+    setPearls([]); setSweetness(75); setIce('normal');
+    setShaking(false); setPearlPositions(null); setIcePositions(null);
   };
 
   const drinkName = tea
@@ -217,8 +266,8 @@ export default function MakingBoba() {
           </button>
         ))}
       </div>
-      <button className="btn btn-green drop-btn" onClick={addPearl}>
-        ⬇ Drop {activeTop.name.split(' ').slice(1).join(' ')} ({pearls.length})
+      <button className="btn btn-green drop-btn" onClick={addPearl} disabled={pearls.length >= 35}>
+        ⬇ Drop 5 {activeTop.name.split(' ').slice(1).join(' ')} ({pearls.length}/35)
       </button>
       <div className="boba-nav">
         <button className="btn btn-orange" onClick={() => setStep(1)}>◀ Back</button>
@@ -301,6 +350,8 @@ export default function MakingBoba() {
             sweetness={sweetness}
             shaking={shaking}
             done={done}
+            pearlPositions={pearlPositions}
+            icePositions={icePositions}
           />
         </div>
 

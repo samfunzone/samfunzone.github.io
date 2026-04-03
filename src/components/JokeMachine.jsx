@@ -1,5 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { launchConfetti } from '../utils/confetti';
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 const JOKES = [
   { setup: "Why don't scientists trust atoms?",       punchline: "Because they make up everything! 😄" },
@@ -17,14 +26,22 @@ const JOKES = [
 ];
 
 export default function JokeMachine() {
-  const [jokeIdx,   setJokeIdx]   = useState(-1);
-  const [phase,     setPhase]     = useState(0);   // 0=initial, 1=setup shown, 2=punchline shown
+  const [jokeIdx, setJokeIdx] = useState(-1);
+  const [phase,   setPhase]   = useState(0); // 0=initial, 1=setup shown, 2=punchline shown
+  // Shuffled order deck; refilled and reshuffled when exhausted
+  const deck = useRef(shuffle(JOKES.map((_, i) => i)));
 
   const btnLabel = phase === 1 ? 'Why? Tell me! 👀' : 'Tell me a joke! 🤣';
 
   const handle = () => {
     if (phase === 0 || phase === 2) {
-      setJokeIdx(i => (i + 1) % JOKES.length);
+      if (deck.current.length === 0) {
+        // Reshuffle, but don't start with the joke we just showed
+        const reshuffled = shuffle(JOKES.map((_, i) => i));
+        if (reshuffled[0] === jokeIdx) reshuffled.push(reshuffled.shift());
+        deck.current = reshuffled;
+      }
+      setJokeIdx(deck.current.shift());
       setPhase(1);
     } else {
       launchConfetti(window.innerWidth / 2, 300, 20);
