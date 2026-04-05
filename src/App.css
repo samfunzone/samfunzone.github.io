@@ -1035,3 +1035,44 @@
   margin: 6px 0 0;
 }
 .brush-label input { accent-color: #ce93d8; width: 100px; }
+
+/* ── Mobile responsive ── */
+@media (max-width: 600px) {
+  .header { padding: 18px 12px 10px; }
+  .header p { font-size: 1rem; }
+
+  .tabs { gap: 6px; padding: 0 10px 12px; }
+  .tab-btn { padding: 7px 11px; font-size: 0.82rem; }
+
+  .container { padding: 0 10px 40px; }
+
+  .card { padding: 16px; border-radius: 16px; }
+  .card h2 { font-size: 1.4rem; margin-bottom: 12px; }
+
+  /* Let SVGs shrink inside their flex parents */
+  .food-viz-area svg,
+  .boba-cup-area svg,
+  .doll-display svg { max-width: 100%; height: auto; }
+
+  /* Room: stack palette on top */
+  .room-palette { flex: 1 1 100%; max-height: none; overflow-y: visible; }
+
+  /* Garden: 2-col seed grid on narrow screens */
+  .garden-seed-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Boba: allow nav buttons to wrap */
+  .boba-nav { flex-wrap: wrap; }
+
+  /* Reduce mole grid gap */
+  .mole-grid { gap: 10px; }
+
+  /* Memory grid on small screens */
+  .mem-grid { gap: 7px; }
+
+  /* Food ingredient list less tall when stacked */
+  .ingredient-list { max-height: 200px; }
+
+  /* Btn row tighter */
+  .btn-row { gap: 8px; }
+  .btn { padding: 10px 20px; font-size: 1rem; }
+}

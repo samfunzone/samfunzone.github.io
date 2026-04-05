@@ -63,7 +63,7 @@ function BobaViz({ size, tea, pearls, ice, sweetness, shaking, done, pearlPositi
   return (
     <div className={`boba-cup-wrap${shaking ? ' shaking' : ''}`}
          style={{ transform: `scale(${sc})`, transformOrigin: 'bottom center' }}>
-      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ overflow: 'visible' }}>
+      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ overflow: 'visible', maxWidth: '100%', height: 'auto' }}>
         <defs>
           <clipPath id={clipId}>
             <path d={cup} />

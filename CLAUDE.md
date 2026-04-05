@@ -32,12 +32,23 @@ npm run lint     # ESLint (flat config, eslint.config.js)
 - **Enchanted Garden**: seed picker shows 6 flower types (Sunflower, Rose, Tulip, Daisy, Lavender, Cherry Blossom). Each has its own `FlowerBloom` SVG component. `PlantSVG` uses per-seed `stemColor`/`leafColor`/`budColor`/`budTip`.
 - **Magic Loops**: canvas-based loop drawing with 4 color palettes (Rainbow, Sparkle, Ocean, Fire) and a magic meter; filling the meter triggers confetti.
 - **My Room**: drag-and-drop SVG room decorator — choose wall color, floor style, then drag furniture and decor items onto the canvas.
+- **Yummy Food SVGs**: all 5 foods (Pizza, Burger, IceCream, Cake, Taco) use ingredient toggle via `added` Set passed as prop.
+  - **IceCream**: dynamic `viewBox` grows upward as scoops stack (`minY = Math.min(topY - R - 35, 0)`, `vh = 290 - minY`). Waffle cone lines wrapped in `<g clipPath="url(#iceConeClip)">` so lines never extend outside the cone triangle.
+  - **Burger**: layers stacked with imperative `curY` counter (`let curY = 234; const nextY = h => { curY -= h; return curY; }`). Each ingredient height subtracted in render order; top bun uses final `curY`.
+  - **Cake**: 3 tiers computed via `lty = i => 258 - (i+1) * LAYER_H` (LAYER_H=44). Each layer: rect + highlight stripe + frosting ellipse cap + drip paths.
+  - **Taco**: arch shell `M22,164 Q110,40 198,164 Z` with 3 depth layers for thickness. All fillings in `<g clipPath="url(#tacoClip)">`. Cheese and sour cream are wavy closed-ribbon SVG paths using alternating `q` bezier curves for top and bottom edges.
 
 ## Styling conventions
 - Every game card uses `.card` + `.card-{color}` (red/blue/green/purple/orange).
 - Shared button styles: `.btn .btn-{color}`.
 - Game-specific styles are prefixed with the game name (e.g. `.boba-`, `.doll-`, `.food-`).
+- Mobile breakpoint at `max-width: 600px` at the bottom of `App.css` — reduces card/tab padding, stacks `.room-palette` full-width, narrows grids. SVGs in food/boba/doll components carry `style={{ maxWidth: '100%', height: 'auto' }}` so they scale on small screens.
+
+## Deployment
+- GitHub Pages via `.github/workflows/deploy.yml` — triggers on push to `main`
+- Live URL: `https://samfunzone.github.io`
+- No `base` in `vite.config.js` needed (repo is `*.github.io`, served from root)
 
 ## Git
-- Remote: `git@github.com:arun4by4/sam-fun-zone.git`
+- Remote: `git@github.com:samfunzone/samfunzone.github.io.git`
 - Branch: `main`

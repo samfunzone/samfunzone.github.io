@@ -536,7 +536,7 @@ function DollSVG({ outfit }) {
   const hasDress = dress && dress !== 'none';
 
   return (
-    <svg viewBox="0 0 200 410" width={200} height={410} style={{ overflow: 'visible' }}>
+    <svg viewBox="0 0 200 410" width={200} height={410} style={{ overflow: 'visible', maxWidth: '100%', height: 'auto' }}>
       {/* 1. Long hair / braids that hang behind the body */}
       <HairBack style={hairStyle} color={hairColor}/>
       {/* 2. Body skin */}

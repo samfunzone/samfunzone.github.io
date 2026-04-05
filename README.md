@@ -2,6 +2,8 @@
 
 A colorful, interactive React app built for kids — packed with games, creative activities, and fun!
 
+**Live site:** https://samfunzone.github.io
+
 ## Games & Activities
 
 | Tab | What it does |
@@ -32,4 +34,9 @@ App runs at **http://localhost:3000**.
 
 - React 19 + Vite
 - Three.js (3D Squishy Stuff)
-- Plain CSS (no UI library)
+- Plain CSS (no UI library) — mobile-responsive
+
+## Deployment
+
+Deployed to GitHub Pages via GitHub Actions on every push to `main`.
+Workflow: `.github/workflows/deploy.yml`
