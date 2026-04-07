@@ -839,31 +839,6 @@
 .mole-emoji.up  { bottom: 4px; }
 .mole-emoji.hit { filter: grayscale(1); bottom: -60px; }
 
-/* ── Balloon Popper ── */
-.balloon-area {
-  position: relative;
-  height: 320px;
-  background: linear-gradient(180deg, #e0f7fa 0%, #b2ebf2 100%);
-  border-radius: 16px;
-  overflow: hidden;
-  border: 3px solid #4fc3f7;
-}
-.balloon {
-  position: absolute;
-  bottom: -80px;
-  font-size: 3rem;
-  cursor: pointer;
-  user-select: none;
-  animation: riseUp linear forwards;
-}
-.balloon:hover { transform: scale(1.12); }
-@keyframes riseUp {
-  0%   { bottom: -80px; }
-  100% { bottom: 110%; }
-}
-.balloon-score { text-align: center; font-size: 1.2rem; margin-bottom: 10px; }
-.balloon-score span { color: #ff6b6b; font-size: 1.5rem; font-weight: bold; }
-
 /* ── Memory Match ── */
 .mem-grid {
   display: grid;
@@ -885,10 +860,34 @@
   transition: transform .2s;
   user-select: none;
 }
-.mem-card.flipped { background: #fff; border-color: #81c784; }
+@keyframes memReveal {
+  0%   { transform: perspective(200px) rotateY(90deg) scale(0.85); }
+  100% { transform: perspective(200px) rotateY(0deg) scale(1); }
+}
+.mem-card.flipped { background: #fff; border-color: #81c784; animation: memReveal 0.25s ease-out; }
 .mem-card.matched { background: #e8f5e9; border-color: #81c784; cursor: default; }
-.mem-card:hover:not(.matched) { transform: scale(1.06); }
+.mem-card:hover:not(.matched):not(.shuffling) { transform: scale(1.06); }
+@keyframes memShuffle {
+  0%   { transform: perspective(200px) rotateY(0deg) scale(1); }
+  25%  { transform: perspective(200px) rotateY(90deg) scale(0.85); }
+  50%  { transform: perspective(200px) rotateY(0deg) scale(1); }
+  75%  { transform: perspective(200px) rotateY(90deg) scale(0.85); }
+  100% { transform: perspective(200px) rotateY(0deg) scale(1); }
+}
+.mem-card.shuffling { animation: memShuffle 0.7s ease-in-out; }
+@keyframes memMatch {
+  0%   { transform: perspective(200px) rotateX(0deg) scale(1); }
+  35%  { transform: perspective(200px) rotateX(-80deg) scale(0.9); }
+  65%  { transform: perspective(200px) rotateX(0deg) scale(1.15); }
+  85%  { transform: perspective(200px) rotateX(4deg) scale(1.05); }
+  100% { transform: perspective(200px) rotateX(0deg) scale(1); }
+}
+.mem-card.celebrating { animation: memMatch 0.45s ease-out; }
+.mem-size-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-size: 1rem; }
+.mem-hard-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.95rem; }
 .mem-status { text-align: center; font-size: 1.2rem; margin-bottom: 12px; min-height: 30px; }
+.btn-outline { background: transparent; border: 2px solid #888; color: #555; }
+.btn-outline:hover { background: #f0f0f0; }
 
 /* ── Joke Machine ── */
 .joke-box {

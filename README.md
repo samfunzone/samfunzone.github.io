@@ -9,8 +9,7 @@ A colorful, interactive React app built for kids — packed with games, creative
 | Tab | What it does |
 |-----|-------------|
 | 🦔 Whack-a-Mole | Whack the moles before the 30-second timer runs out |
-| 🎈 Balloon Pop | Click rising balloons before they float away |
-| 🧠 Memory Match | Flip cards to find all 8 emoji pairs |
+| 🧠 Memory Match | Flip cards to find matching emoji pairs — choose 8, 10, or 12 pairs; optional hard mode shuffles the board every 2 matches |
 | 😂 Joke Machine | Two-step kid-friendly joke reveal |
 | 🎨 Drawing | Freehand canvas with colors, brush size, undo, and save |
 | 🫧 Squishy Stuff | Draw your own shape, extrude it into 3D (Three.js), then stretch, squeeze & squish it |

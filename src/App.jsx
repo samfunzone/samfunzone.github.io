@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import './App.css';
 import WhackAMole    from './components/WhackAMole';
-import BalloonPopper from './components/BalloonPopper';
 import MemoryMatch   from './components/MemoryMatch';
 import JokeMachine   from './components/JokeMachine';
 import DrawingCanvas  from './components/DrawingCanvas';
@@ -15,7 +14,6 @@ import EnchantedGarden from './components/EnchantedGarden';
 
 const TABS = [
   { id: 'whack',    label: '🦔 Whack-a-Mole',   component: <WhackAMole /> },
-  { id: 'balloon',  label: '🎈 Balloon Pop',      component: <BalloonPopper /> },
   { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
   { id: 'joke',     label: '😂 Joke Machine',     component: <JokeMachine /> },
   { id: 'draw',     label: '🎨 Drawing',           component: <DrawingCanvas /> },
