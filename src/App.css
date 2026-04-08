@@ -184,6 +184,71 @@
 .doll-color-swatch:hover  { transform: scale(1.2); }
 .doll-color-swatch.active { box-shadow: 0 0 0 3px #9c27b0; transform: scale(1.2); }
 
+.doll-scene-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  max-width: 220px;
+  scrollbar-width: none;
+}
+.doll-scene-strip::-webkit-scrollbar { display: none; }
+.doll-scene-btn {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border: 2px solid #e1bee7;
+  border-radius: 50px;
+  background: #fff;
+  font-family: inherit;
+  font-size: .78rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all .15s;
+  color: #6a1b9a;
+  white-space: nowrap;
+}
+.doll-scene-btn:hover  { border-color: #ce93d8; background: #f3e5f5; }
+.doll-scene-btn.active { background: #9c27b0; color: #fff; border-color: #6a1b9a; }
+
+.doll-preset-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.doll-preset-label {
+  font-size: .8rem;
+  color: #888;
+  white-space: nowrap;
+  font-weight: bold;
+}
+.doll-preset-btn {
+  padding: 6px 12px;
+  border: 2px solid #ffd93d;
+  border-radius: 50px;
+  background: #fffde7;
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all .15s;
+  color: #6a1b9a;
+  white-space: nowrap;
+}
+.doll-preset-btn:hover  { background: #fff9c4; border-color: #f9a825; transform: translateY(-1px); }
+.doll-preset-btn:active { transform: translateY(1px); }
+
+.doll-face-sep {
+  width: 100%;
+  font-size: .75rem;
+  color: #aaa;
+  padding: 4px 0 2px;
+  letter-spacing: .05em;
+  text-align: center;
+}
+
 /* ── Making Yummy Food ── */
 .food-instruction {
   text-align: center;

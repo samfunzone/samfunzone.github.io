@@ -15,7 +15,7 @@ A colorful, interactive React app built for kids — packed with games, creative
 | 🫧 Squishy Stuff | Draw your own shape, extrude it into 3D (Three.js), then stretch, squeeze & squish it |
 | 🧋 Making Boba | Step-by-step boba tea builder with a live SVG cup preview |
 | 🍽️ Yummy Food | Build a pizza, burger, ice cream, cake, or taco with animated SVG layers |
-| 🪆 Dressing Dolls | Dress up an SVG doll — skin tone, hair, tops, bottoms, dresses, shoes, hats & accessories |
+| 🪆 Dressing Dolls | Dress up an SVG doll — skin tone, 8 hair styles, tops, bottoms, dresses, shoes, hats & accessories; face expressions (eyes, brows, mouth); 6 scene backgrounds; one-click Randomize and themed quick-look presets (Princess, Beach, Sports, Artist, Party) |
 | ✨ Magic Loops | Draw colorful animated loops on a canvas; fill a magic meter to trigger a confetti burst |
 | 🏠 My Room | Drag furniture and decor onto a room canvas; customize wall color, floor style, and layout |
 | 🌸 Enchanted Garden | Pick a seed (Sunflower, Rose, Tulip, Daisy, Lavender, or Cherry Blossom), then use soil, water, and sunlight to grow your flower |

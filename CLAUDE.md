@@ -26,7 +26,15 @@ npm run lint     # ESLint (flat config, eslint.config.js)
 - **Tabs**: `App.jsx` renders one tab at a time from the `TABS` array — no router needed.
 - **Confetti**: import `launchConfetti(x, y, count)` from `src/utils/confetti.js`. The `confettiFall` keyframe is defined in `App.css`.
 - **Three.js (Squishy Stuff)**: scene is created in a `useEffect` on phase change, cleaned up on unmount. Scale state is stored in a `ref` (not React state) so the render loop can read it without re-renders.
-- **SVG dolls (Dressing Dolls)**: layer order matters — HairBack → Body → Clothing → HairFront → HeadSkin → FaceFeatures → Hat → Accessory. HeadSkin must render after HairFront so it covers the face center.
+- **SVG dolls (Dressing Dolls)**: layer order matters — SceneBackground → HairBack → Body → Shoes → Clothing → HairFront → HeadSkin → FaceFeatures → Hat → Accessory. Key rules:
+  - HeadSkin renders after HairFront so it covers the face center.
+  - Shoes render **before** Clothing so skirts/bottoms cover boot tops naturally.
+  - Hats are shifted ~8px lower than head-top (band sits at y≈37–55) so they look seated on the hair.
+  - Tops/bottoms must fully cover the body rect (torso x=58–142). Jeans and shorts use a center panel rect to close the gap between the two leg rects.
+  - Face customization: `eyeStyle` (normal/wide/happy/sleepy/winking), `browStyle` (normal/raised/furrowed/arched), `mouthStyle` (smile/grin/surprised/pouty) are stored in `outfit` state alongside clothing fields.
+  - Scene backgrounds (`SceneBackground` component): 6 options (none/beach/park/school/party/meadow) stored in separate `scene` state.
+  - Presets (`PRESETS` array): each entry has `id`, `label`, `scene`, and a partial `outfit` object merged over current state (skin tone preserved). Beach and Party presets auto-switch scene.
+  - Randomize: `randomFrom(arr)` helper; hat/accessory weighted 2× toward `'none'` to avoid clutter.
 - **Making Boba pearls**: pearls drop 5 at a time (max 35). Before shake they use a 5-per-row grid (cx=48, step=16). On shake, positions come from a dense slot pool — all valid 16px-spaced slots inside the tapered cup are pre-generated, shuffled, and the first N taken. Cup taper: top x=22–138 at y=40, bottom x=40–120 at y=282 (`t=(y-40)/242`, `lx=22+18t`, `rx=138-18t`). Always clamp slice with `Math.min(pearls.length, allSlots.length)` and null-guard each position.
 - **Joke Machine**: jokes are served from a shuffled deck (`useRef`). When the deck empties it reshuffles, avoiding the last-shown joke at position 0.
 - **Enchanted Garden**: seed picker shows 6 flower types (Sunflower, Rose, Tulip, Daisy, Lavender, Cherry Blossom). Each has its own `FlowerBloom` SVG component. `PlantSVG` uses per-seed `stemColor`/`leafColor`/`budColor`/`budTip`.

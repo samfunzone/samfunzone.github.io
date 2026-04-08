@@ -13,6 +13,140 @@ const HAIR_COLORS = [
   '#1a0800','#3d1f02','#7c4520','#c8782a','#d4a017','#e8cc80',
   '#ff6b6b','#9c27b0','#4fc3f7','#81c784','#e0e0e0','#ffffff',
 ];
+const SCENES = [
+  { id: 'none',   label: '✦ Plain'   },
+  { id: 'beach',  label: '🏖 Beach'  },
+  { id: 'park',   label: '🌳 Park'   },
+  { id: 'school', label: '🏫 School' },
+  { id: 'party',  label: '🎈 Party'  },
+  { id: 'meadow', label: '🌈 Meadow' },
+];
+const EYE_STYLES   = ['normal','wide','happy','sleepy','winking'];
+const BROW_STYLES  = ['normal','raised','furrowed','arched'];
+const MOUTH_STYLES = ['smile','grin','surprised','pouty'];
+
+/* ── Scene Backgrounds ── */
+function SceneBackground({ scene }) {
+  switch (scene) {
+    case 'beach': return (
+      <g>
+        <rect x="0" y="0" width="200" height="265" fill="#87ceeb"/>
+        <circle cx="170" cy="30" r="22" fill="#ffd93d"/>
+        {[0,45,90,135,180,225,270,315].map((deg,i) => {
+          const rad = deg * Math.PI / 180;
+          return <line key={i}
+            x1={170 + Math.cos(rad)*26} y1={30 + Math.sin(rad)*26}
+            x2={170 + Math.cos(rad)*37} y2={30 + Math.sin(rad)*37}
+            stroke="#ffd93d" strokeWidth="3" strokeLinecap="round"/>;
+        })}
+        <ellipse cx="40" cy="40" rx="28" ry="14" fill="white" opacity=".85"/>
+        <ellipse cx="60" cy="34" rx="20" ry="13" fill="white" opacity=".85"/>
+        <ellipse cx="22" cy="38" rx="16" ry="10" fill="white" opacity=".85"/>
+        <rect x="0" y="265" width="200" height="145" fill="#f5deb3"/>
+        <path d="M0,265 Q50,255 100,265 Q150,275 200,265 L200,288 Q150,298 100,288 Q50,278 0,288Z"
+              fill="#4fc3f7" opacity=".7"/>
+        <ellipse cx="20" cy="298" rx="7" ry="4" fill="#ffb0a0" transform="rotate(-20 20 298)"/>
+        <ellipse cx="175" cy="308" rx="6" ry="3.5" fill="#ff9eb5" transform="rotate(15 175 308)"/>
+        <rect x="12" y="205" width="8" height="70" rx="3" fill="#8d5524"/>
+        <ellipse cx="16" cy="203" rx="28" ry="14" fill="#4caf50" transform="rotate(-10 16 203)"/>
+        <ellipse cx="22" cy="195" rx="24" ry="12" fill="#388e3c" transform="rotate(10 22 195)"/>
+      </g>
+    );
+    case 'park': return (
+      <g>
+        <rect x="0" y="0" width="200" height="285" fill="#b3e5fc"/>
+        <ellipse cx="50" cy="45" rx="32" ry="16" fill="white" opacity=".9"/>
+        <ellipse cx="72" cy="38" rx="22" ry="14" fill="white" opacity=".9"/>
+        <ellipse cx="30" cy="42" rx="18" ry="11" fill="white" opacity=".9"/>
+        <ellipse cx="155" cy="55" rx="28" ry="13" fill="white" opacity=".9"/>
+        <ellipse cx="175" cy="50" rx="18" ry="11" fill="white" opacity=".9"/>
+        <rect x="0" y="285" width="200" height="125" fill="#66bb6a"/>
+        <rect x="0" y="285" width="200" height="18" fill="#4caf50"/>
+        <rect x="8" y="215" width="10" height="80" rx="4" fill="#6d4c41"/>
+        <circle cx="13" cy="205" r="30" fill="#388e3c"/>
+        <circle cx="-2" cy="222" r="20" fill="#43a047"/>
+        <circle cx="28" cy="220" r="22" fill="#43a047"/>
+        <rect x="182" y="218" width="10" height="80" rx="4" fill="#6d4c41"/>
+        <circle cx="187" cy="208" r="28" fill="#2e7d32"/>
+        <circle cx="172" cy="223" r="19" fill="#388e3c"/>
+        {[[25,315],[45,330],[160,318],[180,333],[100,345]].map(([x,y],i)=>(
+          <text key={i} x={x} y={y} fontSize="14" textAnchor="middle">🌸</text>
+        ))}
+      </g>
+    );
+    case 'school': return (
+      <g>
+        <rect x="0" y="0" width="200" height="225" fill="#e3f2fd"/>
+        <rect x="20" y="130" width="160" height="100" fill="#ffcc80"/>
+        <path d="M10,130 L100,70 L190,130Z" fill="#ef9a9a"/>
+        <rect x="35" y="150" width="28" height="28" rx="3" fill="#b3e5fc"/>
+        <rect x="86" y="150" width="28" height="28" rx="3" fill="#b3e5fc"/>
+        <rect x="137" y="150" width="28" height="28" rx="3" fill="#b3e5fc"/>
+        <line x1="49" y1="150" x2="49" y2="178" stroke="white" strokeWidth="2"/>
+        <line x1="35" y1="164" x2="63" y2="164" stroke="white" strokeWidth="2"/>
+        <line x1="100" y1="150" x2="100" y2="178" stroke="white" strokeWidth="2"/>
+        <line x1="86" y1="164" x2="114" y2="164" stroke="white" strokeWidth="2"/>
+        <line x1="151" y1="150" x2="151" y2="178" stroke="white" strokeWidth="2"/>
+        <line x1="137" y1="164" x2="165" y2="164" stroke="white" strokeWidth="2"/>
+        <rect x="88" y="195" width="24" height="35" rx="3" fill="#8d6e63"/>
+        <rect x="0" y="225" width="200" height="185" fill="#a5d6a7"/>
+        <rect x="80" y="225" width="40" height="185" fill="#bcaaa4" opacity=".5"/>
+        <line x1="100" y1="70" x2="100" y2="40" stroke="#888" strokeWidth="2"/>
+        <path d="M100,40 L128,50 L100,60Z" fill="#ff6b6b"/>
+      </g>
+    );
+    case 'party': return (
+      <g>
+        <rect x="0" y="0" width="200" height="410" fill="#1a0050"/>
+        <circle cx="30" cy="30" r="60" fill="#ff6b6b" opacity=".18"/>
+        <circle cx="170" cy="50" r="55" fill="#4fc3f7" opacity=".18"/>
+        <circle cx="100" cy="20" r="50" fill="#ffd93d" opacity=".15"/>
+        <path d="M0,0 Q30,80 10,160 Q-10,240 20,320" stroke="#ff6b6b" strokeWidth="5" fill="none" opacity=".6"/>
+        <path d="M200,0 Q170,80 190,160 Q210,240 180,320" stroke="#ffd93d" strokeWidth="5" fill="none" opacity=".6"/>
+        <path d="M60,0 Q80,100 60,200 Q40,300 65,410" stroke="#4fc3f7" strokeWidth="4" fill="none" opacity=".5"/>
+        <path d="M140,0 Q120,100 140,200 Q160,300 135,410" stroke="#ce93d8" strokeWidth="4" fill="none" opacity=".5"/>
+        <ellipse cx="20" cy="80" rx="16" ry="20" fill="#ff6b6b" opacity=".85"/>
+        <line x1="20" y1="100" x2="22" y2="130" stroke="#ff6b6b" strokeWidth="1.5"/>
+        <ellipse cx="180" cy="70" rx="16" ry="20" fill="#ffd93d" opacity=".85"/>
+        <line x1="180" y1="90" x2="178" y2="120" stroke="#ffd93d" strokeWidth="1.5"/>
+        <ellipse cx="160" cy="100" rx="14" ry="18" fill="#4fc3f7" opacity=".85"/>
+        <line x1="160" y1="118" x2="158" y2="148" stroke="#4fc3f7" strokeWidth="1.5"/>
+        {[[15,200],[30,320],[170,250],[185,380],[50,370],[150,150],[80,180],[120,360]].map(([x,y],i)=>(
+          <circle key={i} cx={x} cy={y} r="4"
+            fill={['#ff6b6b','#ffd93d','#4fc3f7','#ce93d8','#81c784'][i%5]} opacity=".7"/>
+        ))}
+        {[0,1,2,3,4,5,6,7].map(i=>(
+          <rect key={i} x={i*25} y="375" width="25" height="35"
+            fill={i%2===0 ? '#3a0090' : '#2a0070'} opacity=".8"/>
+        ))}
+      </g>
+    );
+    case 'meadow': return (
+      <g>
+        <rect x="0" y="0" width="200" height="300" fill="#e8f4fd"/>
+        {['#ff6b6b','#ff9800','#ffd93d','#4caf50','#4fc3f7','#9c27b0'].map((clr,i)=>(
+          <path key={i}
+            d={`M${-10+i*3},${215-i*8} Q100,${65-i*10} ${210-i*3},${215-i*8}`}
+            fill="none" stroke={clr} strokeWidth="12" opacity=".35"/>
+        ))}
+        <ellipse cx="30" cy="60" rx="30" ry="15" fill="white" opacity=".9"/>
+        <ellipse cx="52" cy="52" rx="22" ry="14" fill="white" opacity=".9"/>
+        <ellipse cx="12" cy="57" rx="17" ry="10" fill="white" opacity=".9"/>
+        <ellipse cx="160" cy="70" rx="28" ry="13" fill="white" opacity=".9"/>
+        <ellipse cx="180" cy="65" rx="18" ry="10" fill="white" opacity=".9"/>
+        <rect x="0" y="300" width="200" height="110" fill="#81c784"/>
+        <rect x="0" y="300" width="200" height="20" fill="#66bb6a"/>
+        {[[15,320],[35,335],[55,318],[80,340],[130,325],[155,338],[180,320],[165,310]].map(([x,y],i)=>(
+          <text key={i} x={x} y={y} fontSize="16" textAnchor="middle">
+            {['🌸','🌼','🌺','🌻','💐','🌷'][i%6]}
+          </text>
+        ))}
+        <text x="165" y="195" fontSize="22" textAnchor="middle">🦋</text>
+      </g>
+    );
+    default: return <rect x="0" y="0" width="200" height="410" fill="#f9f0ff"/>;
+  }
+}
 
 /* ── SVG Doll Layers ── */
 
@@ -27,8 +161,8 @@ function HeadSkin({ s }) {
   );
 }
 
-// Face features only — renders LAST so always visible
-function FaceFeatures({ s }) {
+/* ── Face expression helpers ── */
+function EyeNormal() {
   return (
     <g>
       <ellipse cx="87"  cy="66" rx="7"   ry="8"   fill="#fff"/>
@@ -37,13 +171,138 @@ function FaceFeatures({ s }) {
       <circle  cx="114" cy="67" r="4.5"            fill="#2c1810"/>
       <circle  cx="89.5" cy="65.5" r="1.5"         fill="#fff"/>
       <circle  cx="115.5" cy="65.5" r="1.5"        fill="#fff"/>
-      <path d="M80,56 Q87,52 94,56"  stroke="#4a2800" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    </g>
+  );
+}
+function EyeWide() {
+  return (
+    <g>
+      <ellipse cx="87"  cy="65" rx="8.5" ry="10"  fill="#fff"/>
+      <ellipse cx="113" cy="65" rx="8.5" ry="10"  fill="#fff"/>
+      <circle  cx="88"  cy="66" r="5.5"            fill="#2c1810"/>
+      <circle  cx="114" cy="66" r="5.5"            fill="#2c1810"/>
+      <circle  cx="90"  cy="64" r="2"              fill="#fff"/>
+      <circle  cx="116" cy="64" r="2"              fill="#fff"/>
+    </g>
+  );
+}
+function EyeHappy() {
+  return (
+    <g>
+      <path d="M80,68 Q87,58 94,68" stroke="#2c1810" strokeWidth="3" fill="#2c1810" strokeLinecap="round"/>
+      <path d="M106,68 Q113,58 120,68" stroke="#2c1810" strokeWidth="3" fill="#2c1810" strokeLinecap="round"/>
+      <circle cx="85"  cy="62" r="1.5" fill="#fff"/>
+      <circle cx="118" cy="62" r="1.5" fill="#fff"/>
+    </g>
+  );
+}
+function EyeSleepy({ s }) {
+  return (
+    <g>
+      <ellipse cx="87"  cy="68" rx="7" ry="8" fill="#fff"/>
+      <ellipse cx="113" cy="68" rx="7" ry="8" fill="#fff"/>
+      <circle  cx="88"  cy="69" r="4" fill="#2c1810"/>
+      <circle  cx="114" cy="69" r="4" fill="#2c1810"/>
+      <rect x="80" y="60" width="14" height="9" rx="2" fill={s}/>
+      <rect x="106" y="60" width="14" height="9" rx="2" fill={s}/>
+      <path d="M80,65 Q87,61 94,65" stroke="#3a2010" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      <path d="M106,65 Q113,61 120,65" stroke="#3a2010" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    </g>
+  );
+}
+function EyeWinking() {
+  return (
+    <g>
+      <ellipse cx="87"  cy="66" rx="7"   ry="8"  fill="#fff"/>
+      <circle  cx="88"  cy="67" r="4.5"           fill="#2c1810"/>
+      <circle  cx="89.5" cy="65.5" r="1.5"        fill="#fff"/>
+      <path d="M106,67 Q113,59 120,67" stroke="#2c1810" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    </g>
+  );
+}
+function BrowNormal() {
+  return (
+    <g>
+      <path d="M80,56 Q87,52 94,56"   stroke="#4a2800" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
       <path d="M106,56 Q113,52 120,56" stroke="#4a2800" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-      <ellipse cx="100" cy="78" rx="5" ry="3.5" fill="rgba(0,0,0,0.07)"/>
+    </g>
+  );
+}
+function BrowRaised() {
+  return (
+    <g>
+      <path d="M80,51 Q87,47 94,51"   stroke="#4a2800" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      <path d="M106,51 Q113,47 120,51" stroke="#4a2800" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    </g>
+  );
+}
+function BrowFurrowed() {
+  return (
+    <g>
+      <path d="M80,55 Q87,58 94,54"   stroke="#4a2800" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+      <path d="M106,54 Q113,58 120,55" stroke="#4a2800" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+    </g>
+  );
+}
+function BrowArched() {
+  return (
+    <g>
+      <path d="M80,54 Q87,46 94,54"   stroke="#4a2800" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      <path d="M106,54 Q113,46 120,54" stroke="#4a2800" strokeWidth="3" fill="none" strokeLinecap="round"/>
+    </g>
+  );
+}
+function MouthSmile() {
+  return (
+    <g>
       <path d="M88,88 Q100,98 112,88" stroke="#d47070" strokeWidth="3" fill="none" strokeLinecap="round"/>
       <path d="M91,88 Q100,93 109,88" fill="#e09090" opacity=".6"/>
+    </g>
+  );
+}
+function MouthGrin() {
+  return (
+    <g>
+      <path d="M83,88 Q100,102 117,88" stroke="#d47070" strokeWidth="3" fill="none" strokeLinecap="round"/>
+      <path d="M85,88 Q100,98 115,88 L115,91 Q100,101 85,91Z" fill="#e09090" opacity=".7"/>
+      <rect x="90" y="88" width="20" height="6" rx="2" fill="white" opacity=".85"/>
+    </g>
+  );
+}
+function MouthSurprised() {
+  return (
+    <g>
+      <ellipse cx="100" cy="93" rx="7" ry="9" fill="#c46060"/>
+      <ellipse cx="100" cy="92" rx="5" ry="6" fill="#1a0010" opacity=".6"/>
+    </g>
+  );
+}
+function MouthPouty() {
+  return (
+    <path d="M91,92 Q100,88 109,92" stroke="#d47070" strokeWidth="3" fill="none" strokeLinecap="round"/>
+  );
+}
+
+// Face features — renders LAST so always visible
+function FaceFeatures({ s, eyeStyle = 'normal', browStyle = 'normal', mouthStyle = 'smile' }) {
+  return (
+    <g>
       <ellipse cx="74"  cy="82" rx="11" ry="7" fill="#ffb0a0" opacity=".35"/>
       <ellipse cx="126" cy="82" rx="11" ry="7" fill="#ffb0a0" opacity=".35"/>
+      <ellipse cx="100" cy="78" rx="5" ry="3.5" fill="rgba(0,0,0,0.07)"/>
+      {eyeStyle === 'normal'  && <EyeNormal />}
+      {eyeStyle === 'wide'    && <EyeWide />}
+      {eyeStyle === 'happy'   && <EyeHappy />}
+      {eyeStyle === 'sleepy'  && <EyeSleepy s={s} />}
+      {eyeStyle === 'winking' && <EyeWinking />}
+      {browStyle === 'normal'   && <BrowNormal />}
+      {browStyle === 'raised'   && <BrowRaised />}
+      {browStyle === 'furrowed' && <BrowFurrowed />}
+      {browStyle === 'arched'   && <BrowArched />}
+      {mouthStyle === 'smile'     && <MouthSmile />}
+      {mouthStyle === 'grin'      && <MouthGrin />}
+      {mouthStyle === 'surprised' && <MouthSurprised />}
+      {mouthStyle === 'pouty'     && <MouthPouty />}
     </g>
   );
 }
@@ -192,7 +451,7 @@ function TopLayer({ top, color, s }) {
     );
     case 'tank': return (
       <g>
-        <rect x="68" y="132" width="64" height="96" rx="10" fill={c}/>
+        <rect x="58" y="132" width="84" height="96" rx="10" fill={c}/>
         <path d="M80,132 Q100,150 120,132" fill={s} opacity=".7"/>
       </g>
     );
@@ -234,7 +493,9 @@ function BottomLayer({ bottom, color }) {
   switch(bottom) {
     case 'jeans': return (
       <g>
-        <rect x="60" y="222" width="80" height="18" rx="4" fill={c}/>
+        <rect x="60" y="218" width="80" height="22" rx="4" fill={c}/>
+        {/* center panel closes the gap between legs */}
+        <rect x="92" y="237" width="16" height="106" fill={c}/>
         <rect x="63" y="237" width="32" height="106" rx="14" fill={c}/>
         <rect x="105" y="237" width="32" height="106" rx="14" fill={c}/>
         {/* Seam */}
@@ -258,7 +519,9 @@ function BottomLayer({ bottom, color }) {
     );
     case 'shorts': return (
       <g>
-        <rect x="60" y="222" width="80" height="14" rx="4" fill={c}/>
+        <rect x="60" y="218" width="80" height="18" rx="4" fill={c}/>
+        {/* center panel closes the gap between legs */}
+        <rect x="90" y="233" width="20" height="30" fill={c}/>
         <rect x="63" y="233" width="32" height="52" rx="14" fill={c}/>
         <rect x="105" y="233" width="32" height="52" rx="14" fill={c}/>
       </g>
@@ -421,60 +684,60 @@ function HatLayer({ hat, color }) {
   switch(hat) {
     case 'crown': return (
       <g>
-        <path d="M65,32 L65,10 L80,22 L100,5 L120,22 L135,10 L135,32 Z" fill={c}/>
-        <rect x="63" y="28" width="74" height="14" rx="4" fill={c} style={{filter:'brightness(.85)'}}/>
+        <path d="M65,40 L65,18 L80,30 L100,13 L120,30 L135,18 L135,40 Z" fill={c}/>
+        <rect x="63" y="36" width="74" height="14" rx="4" fill={c} style={{filter:'brightness(.85)'}}/>
         {/* Gems */}
-        <circle cx="100" cy="14" r="5" fill="#e91e63"/>
-        <circle cx="78" cy="20" r="4" fill="#4fc3f7"/>
-        <circle cx="122" cy="20" r="4" fill="#4caf50"/>
+        <circle cx="100" cy="22" r="5" fill="#e91e63"/>
+        <circle cx="78" cy="28" r="4" fill="#4fc3f7"/>
+        <circle cx="122" cy="28" r="4" fill="#4caf50"/>
       </g>
     );
     case 'cap': return (
       <g>
-        <ellipse cx="100" cy="32" rx="45" ry="22" fill={c}/>
+        <ellipse cx="100" cy="40" rx="45" ry="22" fill={c}/>
         {/* Brim */}
-        <path d="M56,36 Q56,50 90,50 L90,38Z" fill={c} style={{filter:'brightness(.8)'}}/>
+        <path d="M56,44 Q56,58 90,58 L90,46Z" fill={c} style={{filter:'brightness(.8)'}}/>
         {/* Button */}
-        <circle cx="100" cy="14" r="5" fill={c} style={{filter:'brightness(.8)'}}/>
+        <circle cx="100" cy="22" r="5" fill={c} style={{filter:'brightness(.8)'}}/>
         {/* Line */}
-        <line x1="57" y1="36" x2="143" y2="36" stroke="rgba(0,0,0,0.1)" strokeWidth="2"/>
+        <line x1="57" y1="44" x2="143" y2="44" stroke="rgba(0,0,0,0.1)" strokeWidth="2"/>
       </g>
     );
     case 'sunhat': return (
       <g>
         {/* Brim */}
-        <ellipse cx="100" cy="36" rx="65" ry="14" fill={c} style={{filter:'brightness(.85)'}}/>
+        <ellipse cx="100" cy="44" rx="65" ry="14" fill={c} style={{filter:'brightness(.85)'}}/>
         {/* Dome */}
-        <ellipse cx="100" cy="22" rx="42" ry="22" fill={c}/>
+        <ellipse cx="100" cy="30" rx="42" ry="22" fill={c}/>
         {/* Band */}
-        <ellipse cx="100" cy="36" rx="42" ry="8" fill="#ff6b6b" opacity=".7"/>
+        <ellipse cx="100" cy="44" rx="42" ry="8" fill="#ff6b6b" opacity=".7"/>
         {/* Flowers */}
-        <text x="74" y="40" fontSize="14" textAnchor="middle">🌸</text>
-        <text x="130" y="40" fontSize="14" textAnchor="middle">🌸</text>
+        <text x="74" y="48" fontSize="14" textAnchor="middle">🌸</text>
+        <text x="130" y="48" fontSize="14" textAnchor="middle">🌸</text>
       </g>
     );
     case 'beanie': return (
       <g>
-        <ellipse cx="100" cy="35" rx="44" ry="24" fill={c}/>
-        <rect x="57" y="30" width="86" height="18" rx="4" fill={c} style={{filter:'brightness(.85)'}}/>
+        <ellipse cx="100" cy="42" rx="46" ry="24" fill={c}/>
+        <rect x="54" y="37" width="92" height="18" rx="4" fill={c} style={{filter:'brightness(.85)'}}/>
         {/* Pompom */}
-        <circle cx="100" cy="14" r="12" fill={c} style={{filter:'brightness(1.1)'}}/>
-        <circle cx="100" cy="14" r="8" fill={c} style={{filter:'brightness(1.2)'}}/>
+        <circle cx="100" cy="20" r="12" fill={c} style={{filter:'brightness(1.1)'}}/>
+        <circle cx="100" cy="20" r="8" fill={c} style={{filter:'brightness(1.2)'}}/>
         {/* Ribbing lines */}
-        {[68,80,92,104,116,128].map(x => (
-          <line key={x} x1={x} y1="30" x2={x} y2="48" stroke="rgba(0,0,0,0.1)" strokeWidth="2"/>
+        {[66,78,90,102,114,126,138].map(x => (
+          <line key={x} x1={x} y1="37" x2={x} y2="55" stroke="rgba(0,0,0,0.1)" strokeWidth="2"/>
         ))}
       </g>
     );
     case 'bow': return (
       <g>
         {/* Big bow */}
-        <ellipse cx="80" cy="20" rx="22" ry="14" fill={c} transform="rotate(-15 80 20)"/>
-        <ellipse cx="120" cy="20" rx="22" ry="14" fill={c} transform="rotate(15 120 20)"/>
-        <circle cx="100" cy="20" r="10" fill={c} style={{filter:'brightness(.9)'}}/>
+        <ellipse cx="80" cy="28" rx="22" ry="14" fill={c} transform="rotate(-15 80 28)"/>
+        <ellipse cx="120" cy="28" rx="22" ry="14" fill={c} transform="rotate(15 120 28)"/>
+        <circle cx="100" cy="28" r="10" fill={c} style={{filter:'brightness(.9)'}}/>
         {/* Ribbons */}
-        <path d="M90,28 Q80,40 70,55" stroke={c} strokeWidth="5" fill="none" strokeLinecap="round"/>
-        <path d="M110,28 Q120,40 130,55" stroke={c} strokeWidth="5" fill="none" strokeLinecap="round"/>
+        <path d="M90,36 Q80,48 70,63" stroke={c} strokeWidth="5" fill="none" strokeLinecap="round"/>
+        <path d="M110,36 Q120,48 130,63" stroke={c} strokeWidth="5" fill="none" strokeLinecap="round"/>
       </g>
     );
     default: return null;
@@ -529,19 +792,24 @@ function AccessoryLayer({ accessory, color }) {
 }
 
 /* ── Main Doll SVG ── */
-function DollSVG({ outfit }) {
+function DollSVG({ outfit, scene }) {
   const { skin, hairStyle, hairColor, top, topColor, bottom, bottomColor,
-          dress, dressColor, shoes, shoesColor, hat, hatColor, accessory, accColor } = outfit;
+          dress, dressColor, shoes, shoesColor, hat, hatColor, accessory, accColor,
+          eyeStyle, browStyle, mouthStyle } = outfit;
   const s = skin || SKINS[1];
   const hasDress = dress && dress !== 'none';
 
   return (
     <svg viewBox="0 0 200 410" width={200} height={410} style={{ overflow: 'visible', maxWidth: '100%', height: 'auto' }}>
+      {/* 0. Scene background */}
+      <SceneBackground scene={scene}/>
       {/* 1. Long hair / braids that hang behind the body */}
       <HairBack style={hairStyle} color={hairColor}/>
       {/* 2. Body skin */}
       <Body s={s}/>
-      {/* 3. Clothing */}
+      {/* 3. Shoes — rendered before clothing so skirts/bottoms cover boot tops */}
+      <ShoesLayer shoes={shoes} color={shoesColor}/>
+      {/* 4. Clothing */}
       {hasDress
         ? <DressLayer dress={dress} color={dressColor}/>
         : <>
@@ -549,14 +817,12 @@ function DollSVG({ outfit }) {
             <BottomLayer bottom={bottom} color={bottomColor}/>
           </>
       }
-      {/* 4. Shoes */}
-      <ShoesLayer shoes={shoes} color={shoesColor}/>
       {/* 5. Hair cap/style — renders before head skin so head skin covers face center */}
       <HairFront style={hairStyle} color={hairColor}/>
       {/* 6. Head skin — covers center of any hair, leaving sides/top visible */}
       <HeadSkin s={s}/>
       {/* 7. Face features — always on top, always visible */}
-      <FaceFeatures s={s}/>
+      <FaceFeatures s={s} eyeStyle={eyeStyle} browStyle={browStyle} mouthStyle={mouthStyle}/>
       {/* 8. Hat + accessories */}
       <HatLayer hat={hat} color={hatColor}/>
       <AccessoryLayer accessory={accessory} color={accColor}/>
@@ -624,6 +890,24 @@ const CATEGORIES = [
       { id:'bag',      label:'Handbag'   },
       { id:'star',     label:'Star Wand' },
     ] },
+  { id: 'face',      label: '😊 Face',    noColor: true,
+    items: [
+      { id:'eye_normal',    label:'Normal Eyes'  },
+      { id:'eye_wide',      label:'Wide Eyes'    },
+      { id:'eye_happy',     label:'Happy Eyes'   },
+      { id:'eye_sleepy',    label:'Sleepy Eyes'  },
+      { id:'eye_winking',   label:'Winking'      },
+      { id:'__sep_brow__',  label:'── Brows ──',  isSep: true },
+      { id:'brow_normal',   label:'Normal Brows' },
+      { id:'brow_raised',   label:'Raised Brows' },
+      { id:'brow_furrowed', label:'Fierce Brows' },
+      { id:'brow_arched',   label:'Arched Brows' },
+      { id:'__sep_mouth__', label:'── Mouth ──',  isSep: true },
+      { id:'mouth_smile',     label:'Smile'      },
+      { id:'mouth_grin',      label:'Big Grin'   },
+      { id:'mouth_surprised', label:'Surprised!' },
+      { id:'mouth_pouty',     label:'Pouty'      },
+    ] },
 ];
 
 const DEFAULT_OUTFIT = {
@@ -635,19 +919,77 @@ const DEFAULT_OUTFIT = {
   shoes: 'sneakers',shoesColor: '#ffffff',
   hat: 'none',      hatColor: '#ffd93d',
   accessory: 'none',accColor: '#ffd93d',
+  eyeStyle: 'normal', browStyle: 'normal', mouthStyle: 'smile',
 };
 
+const PRESETS = [
+  { id: 'princess', label: '👸 Princess', scene: 'none', outfit: {
+    hairStyle: 'bun',      hairColor: HAIR_COLORS[5],
+    top: 'tshirt',         topColor: '#e91e63',
+    bottom: 'skirt',       bottomColor: '#9c27b0',
+    dress: 'princess',     dressColor: '#e91e63',
+    shoes: 'heels',        shoesColor: '#ffd93d',
+    hat: 'crown',          hatColor: '#ffd93d',
+    accessory: 'necklace', accColor: '#ffd93d',
+    eyeStyle: 'wide', browStyle: 'arched', mouthStyle: 'smile',
+  }},
+  { id: 'beach', label: '🏖 Beach', scene: 'beach', outfit: {
+    hairStyle: 'ponytail', hairColor: HAIR_COLORS[3],
+    top: 'tank',           topColor: '#ff9800',
+    bottom: 'shorts',      bottomColor: '#4fc3f7',
+    dress: 'none',         dressColor: '#e91e63',
+    shoes: 'flats',        shoesColor: '#f5deb3',
+    hat: 'sunhat',         hatColor: '#ffd93d',
+    accessory: 'bag',      accColor: '#ff9800',
+    eyeStyle: 'happy', browStyle: 'raised', mouthStyle: 'grin',
+  }},
+  { id: 'sports', label: '⚽ Sports', scene: 'park', outfit: {
+    hairStyle: 'ponytail', hairColor: HAIR_COLORS[1],
+    top: 'tshirt',         topColor: '#4caf50',
+    bottom: 'shorts',      bottomColor: '#212121',
+    dress: 'none',         dressColor: '#e91e63',
+    shoes: 'sneakers',     shoesColor: '#ffffff',
+    hat: 'cap',            hatColor: '#4caf50',
+    accessory: 'none',     accColor: '#ffd93d',
+    eyeStyle: 'wide', browStyle: 'furrowed', mouthStyle: 'grin',
+  }},
+  { id: 'artist', label: '🎨 Artist', scene: 'none', outfit: {
+    hairStyle: 'curly',    hairColor: HAIR_COLORS[6],
+    top: 'blouse',         topColor: '#ff6b6b',
+    bottom: 'miniskirt',   bottomColor: '#ffd93d',
+    dress: 'none',         dressColor: '#e91e63',
+    shoes: 'boots',        shoesColor: '#795548',
+    hat: 'bow',            hatColor: '#9c27b0',
+    accessory: 'glasses',  accColor: '#ffd93d',
+    eyeStyle: 'happy', browStyle: 'arched', mouthStyle: 'smile',
+  }},
+  { id: 'party', label: '🎉 Party', scene: 'party', outfit: {
+    hairStyle: 'afro',     hairColor: HAIR_COLORS[8],
+    top: 'tank',           topColor: '#e91e63',
+    bottom: 'skirt',       bottomColor: '#9c27b0',
+    dress: 'none',         dressColor: '#e91e63',
+    shoes: 'heels',        shoesColor: '#ffd93d',
+    hat: 'none',           hatColor: '#ffd93d',
+    accessory: 'necklace', accColor: '#e91e63',
+    eyeStyle: 'winking', browStyle: 'raised', mouthStyle: 'grin',
+  }},
+];
+
 export default function DressingDolls() {
-  const [outfit,  setOutfit]  = useState(DEFAULT_OUTFIT);
-  const [cat,     setCat]     = useState('hair');
-  const [flashing,setFlashing]= useState(false);
+  const [outfit,   setOutfit]   = useState(DEFAULT_OUTFIT);
+  const [cat,      setCat]      = useState('hair');
+  const [scene,    setScene]    = useState('none');
+  const [flashing, setFlashing] = useState(false);
 
   const category = CATEGORIES.find(c => c.id === cat);
 
-  const pick = (itemId) => {
+  const flash = () => {
     setFlashing(true);
     setTimeout(() => setFlashing(false), 300);
+  };
 
+  const pick = (itemId) => {
+    flash();
     setOutfit(prev => {
       const next = { ...prev };
       switch(cat) {
@@ -659,6 +1001,12 @@ export default function DressingDolls() {
         case 'shoes':   next.shoes = itemId; break;
         case 'hats':    next.hat = itemId; break;
         case 'extras':  next.accessory = itemId; break;
+        case 'face':
+          if (itemId.startsWith('eye_'))   next.eyeStyle   = itemId.replace('eye_', '');
+          if (itemId.startsWith('brow_'))  next.browStyle  = itemId.replace('brow_', '');
+          if (itemId.startsWith('mouth_')) next.mouthStyle = itemId.replace('mouth_', '');
+          break;
+        default: break;
       }
       return next;
     });
@@ -675,6 +1023,7 @@ export default function DressingDolls() {
         case 'shoes':   next.shoesColor  = color; break;
         case 'hats':    next.hatColor    = color; break;
         case 'extras':  next.accColor    = color; break;
+        default: break;
       }
       return next;
     });
@@ -686,6 +1035,45 @@ export default function DressingDolls() {
     launchConfetti(window.innerWidth * 0.8, 0, 30);
     setTimeout(() => launchConfetti(window.innerWidth * 0.35, 0, 25), 300);
     setTimeout(() => launchConfetti(window.innerWidth * 0.65, 0, 25), 300);
+  };
+
+  const randomFrom = arr => arr[Math.floor(Math.random() * arr.length)];
+  const randomize = () => {
+    flash();
+    const useDress = Math.random() < 0.4;
+    setOutfit(prev => ({
+      ...prev,
+      hairStyle:  randomFrom(['bob','long','curly','afro','pigtails','ponytail','braids','bun']),
+      hairColor:  randomFrom(HAIR_COLORS),
+      top:        useDress ? 'tshirt' : randomFrom(['tshirt','tank','hoodie','blouse']),
+      topColor:   randomFrom(CLOTH_COLORS),
+      bottom:     useDress ? 'skirt' : randomFrom(['jeans','skirt','shorts','miniskirt']),
+      bottomColor:randomFrom(CLOTH_COLORS),
+      dress:      useDress ? randomFrom(['princess','casual','tutu','summer']) : 'none',
+      dressColor: randomFrom(CLOTH_COLORS),
+      shoes:      randomFrom(['sneakers','boots','heels','flats']),
+      shoesColor: randomFrom(CLOTH_COLORS),
+      hat:        randomFrom(['none','none','crown','cap','sunhat','beanie','bow']),
+      hatColor:   randomFrom(CLOTH_COLORS),
+      accessory:  randomFrom(['none','none','glasses','necklace','bag','star']),
+      accColor:   randomFrom(CLOTH_COLORS),
+      eyeStyle:   randomFrom(EYE_STYLES),
+      browStyle:  randomFrom(BROW_STYLES),
+      mouthStyle: randomFrom(MOUTH_STYLES),
+    }));
+  };
+
+  const applyPreset = (preset) => {
+    flash();
+    setOutfit(prev => ({ ...prev, ...preset.outfit }));
+    setScene(preset.scene);
+  };
+
+  const isFaceActive = (itemId) => {
+    if (itemId.startsWith('eye_'))   return outfit.eyeStyle   === itemId.replace('eye_', '');
+    if (itemId.startsWith('brow_'))  return outfit.browStyle  === itemId.replace('brow_', '');
+    if (itemId.startsWith('mouth_')) return outfit.mouthStyle === itemId.replace('mouth_', '');
+    return false;
   };
 
   const currentColor = {
@@ -707,20 +1095,45 @@ export default function DressingDolls() {
       <div className="doll-layout">
         {/* ── Doll display ── */}
         <div className="doll-display">
-          <div className={flashing ? 'doll-flash' : ''}>
-            <DollSVG outfit={outfit}/>
+          {/* Scene selector strip */}
+          <div className="doll-scene-strip">
+            {SCENES.map(sc => (
+              <button key={sc.id}
+                className={`doll-scene-btn${scene === sc.id ? ' active' : ''}`}
+                onClick={() => setScene(sc.id)}>
+                {sc.label}
+              </button>
+            ))}
           </div>
+
+          <div className={flashing ? 'doll-flash' : ''}>
+            <DollSVG outfit={outfit} scene={scene}/>
+          </div>
+
           <button className="btn btn-purple" style={{ marginTop:10, width:'100%' }} onClick={celebrate}>
             🎉 Show Off!
           </button>
+          <button className="btn btn-green" style={{ marginTop:8, width:'100%' }} onClick={randomize}>
+            🎲 Randomize!
+          </button>
           <button className="btn btn-orange" style={{ marginTop:8, width:'100%' }}
-            onClick={() => setOutfit(DEFAULT_OUTFIT)}>
+            onClick={() => { setOutfit(DEFAULT_OUTFIT); setScene('none'); }}>
             ↺ Start Over
           </button>
         </div>
 
         {/* ── Controls ── */}
         <div className="doll-controls">
+          {/* Quick-look preset strip */}
+          <div className="doll-preset-strip">
+            <span className="doll-preset-label">Quick looks:</span>
+            {PRESETS.map(p => (
+              <button key={p.id} className="doll-preset-btn" onClick={() => applyPreset(p)}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+
           {/* Category tabs */}
           <div className="doll-tabs">
             {CATEGORIES.map(c => (
@@ -734,7 +1147,7 @@ export default function DressingDolls() {
 
           {/* Item grid */}
           <div className="doll-items">
-            {category?.noColor
+            {cat === 'skin'
               ? category.items.map(it => (
                   <button key={it.id}
                     className={`doll-item-btn skin-btn${currentItem === it.id ? ' active' : ''}`}
@@ -742,18 +1155,20 @@ export default function DressingDolls() {
                     onClick={() => pick(it.id)}
                   />
                 ))
-              : category?.items.map(it => (
-                  <button key={it.id}
-                    className={`doll-item-btn${currentItem === it.id ? ' active' : ''}`}
-                    onClick={() => pick(it.id)}>
-                    {it.label}
-                  </button>
-                ))
+              : category?.items.map(it =>
+                  it.isSep
+                    ? <span key={it.id} className="doll-face-sep">{it.label}</span>
+                    : <button key={it.id}
+                        className={`doll-item-btn${(cat === 'face' ? isFaceActive(it.id) : currentItem === it.id) ? ' active' : ''}`}
+                        onClick={() => pick(it.id)}>
+                        {it.label}
+                      </button>
+                )
             }
           </div>
 
           {/* Color palette */}
-          {!category?.noColor && cat !== 'skin' && (
+          {!category?.noColor && (
             <div className="doll-color-section">
               <p className="doll-color-label">Pick a color:</p>
               <div className="doll-color-grid">
