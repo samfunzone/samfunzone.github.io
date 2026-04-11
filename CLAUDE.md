@@ -51,6 +51,7 @@ npm run lint     # ESLint (flat config, eslint.config.js)
 - Shared button styles: `.btn .btn-{color}`.
 - Game-specific styles are prefixed with the game name (e.g. `.boba-`, `.doll-`, `.food-`).
 - Mobile breakpoint at `max-width: 600px` at the bottom of `App.css` — reduces card/tab padding, stacks `.room-palette` full-width, narrows grids. SVGs in food/boba/doll components carry `style={{ maxWidth: '100%', height: 'auto' }}` so they scale on small screens.
+- Horizontal scrolling strips (e.g. `.doll-scene-strip`) must NOT have a `max-width` — use `overflow-x: auto` alone so buttons are never clipped on narrow screens.
 
 ## Deployment
 - GitHub Pages via `.github/workflows/deploy.yml` — triggers on push to `main`
