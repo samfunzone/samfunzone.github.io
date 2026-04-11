@@ -190,7 +190,6 @@
   overflow-x: auto;
   padding-bottom: 8px;
   margin-bottom: 8px;
-  max-width: 220px;
   scrollbar-width: none;
 }
 .doll-scene-strip::-webkit-scrollbar { display: none; }
