@@ -11,6 +11,7 @@ import DressingDolls   from './components/DressingDolls';
 import MagicLoops      from './components/MagicLoops';
 import MakingYourRoom  from './components/MakingYourRoom';
 import EnchantedGarden from './components/EnchantedGarden';
+import FamilyFeud      from './components/FamilyFeud';
 
 const TABS = [
   { id: 'whack',    label: '🦔 Whack-a-Mole',   component: <WhackAMole /> },
@@ -24,6 +25,7 @@ const TABS = [
   { id: 'loops',    label: '✨ Magic Loops',        component: <MagicLoops /> },
   { id: 'room',     label: '🏠 My Room',            component: <MakingYourRoom /> },
   { id: 'garden',   label: '🌸 Enchanted Garden',   component: <EnchantedGarden /> },
+  { id: 'feud',     label: '📺 Family Feud',         component: <FamilyFeud /> },
 ];
 
 export default function App() {

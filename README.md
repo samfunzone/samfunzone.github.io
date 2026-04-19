@@ -19,6 +19,7 @@ A colorful, interactive React app built for kids — packed with games, creative
 | ✨ Magic Loops | Draw colorful animated loops on a canvas; fill a magic meter to trigger a confetti burst |
 | 🏠 My Room | Drag furniture and decor onto a room canvas; customize wall color, floor style, and layout |
 | 🌸 Enchanted Garden | Pick a seed (Sunflower, Rose, Tulip, Daisy, Lavender, or Cherry Blossom), then use soil, water, and sunlight to grow your flower |
+| 📺 Family Feud | Survey-style guessing game — read the question, type your answer, and try to uncover all the top responses before 3 strikes. 5 random rounds drawn from a 75-question family-friendly pool; includes a Reveal Answers button |
 
 ## Getting Started
 
