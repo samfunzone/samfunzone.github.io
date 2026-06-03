@@ -20,6 +20,8 @@ A colorful, interactive React app built for kids — packed with games, creative
 | 🏠 My Room | Drag furniture and decor onto a room canvas; customize wall color, floor style, and layout |
 | 🌸 Enchanted Garden | Pick a seed (Sunflower, Rose, Tulip, Daisy, Lavender, or Cherry Blossom), then use soil, water, and sunlight to grow your flower |
 | 📺 Family Feud | Survey-style guessing game — read the question, type your answer, and try to uncover all the top responses before 3 strikes. 5 random rounds drawn from a 75-question family-friendly pool; includes a Reveal Answers button |
+| 🧩 Riddle Machine | 50 lateral-thinking riddles with hints; shuffled deck so they never repeat |
+| 🔍 Number Detective | Guess a secret number (1–100 up to 1–100,000) using higher/lower clues and a hot/cold thermometer. Range bar shows the remaining candidates as a segment on the full number line. **Hard Mode** hides previous clues and the range boundary numbers — only the latest result is shown; tap 💡 to peek at history |
 
 ## Getting Started
 

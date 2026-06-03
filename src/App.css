@@ -1374,6 +1374,335 @@
 }
 .riddle-shake { animation: riddleShake 0.45s ease; }
 
+/* ── Number Detective ── */
+.nd-select-header { text-align: center; margin-bottom: 24px; }
+.nd-magnify { font-size: 3.5rem; margin-bottom: 6px; animation: ndFloat 3s ease-in-out infinite; }
+.nd-select-header h2 { font-size: 2rem; margin-bottom: 6px; }
+.nd-select-sub { color: #555; font-size: 1rem; line-height: 1.5; }
+
+.nd-level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.nd-level-card {
+  background: var(--nd-bg);
+  border: 3px solid var(--nd-border);
+  border-radius: 18px;
+  padding: 22px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  transition: transform .18s, box-shadow .18s;
+}
+.nd-level-card:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+.nd-lc-emoji { font-size: 2.6rem; margin-bottom: 6px; }
+.nd-lc-rank  { font-size: 1.2rem; font-weight: 900; color: var(--nd-accent); margin-bottom: 4px; }
+.nd-lc-range { font-size: 0.95rem; font-weight: 600; color: #333; margin-bottom: 6px; }
+.nd-lc-hint  { font-size: 0.78rem; color: #777; }
+
+.nd-game-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.nd-rank-pill {
+  color: #fff;
+  border-radius: 50px;
+  padding: 6px 16px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.nd-guess-count { font-size: 0.95rem; font-weight: 600; color: #333; }
+.nd-opt-hint { color: #aaa; font-weight: 400; }
+
+.nd-mystery {
+  text-align: center;
+  border: 3px dashed;
+  border-radius: 18px;
+  padding: 22px 16px;
+  margin-bottom: 20px;
+  background: rgba(255,255,255,0.65);
+}
+.nd-mystery-label {
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+.nd-mystery-glyphs {
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: 10px;
+  color: #444;
+  font-family: 'Courier New', monospace;
+  animation: ndGlyphPulse 2.4s ease-in-out infinite;
+  margin-bottom: 10px;
+}
+.nd-mystery-range {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #777;
+  font-family: 'Courier New', monospace;
+}
+
+.nd-bar-section { margin-bottom: 20px; }
+.nd-bar-track {
+  position: relative;
+  height: 16px;
+  background: #e0e0e0;
+  border-radius: 50px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.nd-bar-fill {
+  position: absolute;
+  height: 100%;
+  border-radius: 50px;
+  transition: left .4s ease, width .4s ease;
+}
+.nd-bar-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #bbb;
+  font-weight: 600;
+  padding: 0 2px;
+  margin-bottom: 2px;
+}
+.nd-bar-markers {
+  position: relative;
+  height: 18px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.nd-bar-lo, .nd-bar-hi {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.nd-bar-hi { transform: translateX(50%); }
+
+.nd-input-row { display: flex; gap: 10px; margin-bottom: 18px; }
+.nd-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: inherit;
+  border: 3px solid;
+  border-radius: 12px;
+  outline: none;
+  text-align: center;
+  background: #fff;
+  transition: box-shadow .15s;
+}
+.nd-input:focus { box-shadow: 0 0 0 4px color-mix(in srgb, var(--nd-focus, #2196f3) 25%, transparent); }
+.nd-guess-btn { color: #fff !important; font-size: 1.05rem !important; white-space: nowrap; }
+
+.nd-log { background: #f8f9fa; border-radius: 14px; padding: 14px 14px 10px; margin-bottom: 14px; }
+.nd-log-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #aaa; margin-bottom: 10px; }
+.nd-log-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+.nd-clue {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+.nd-clue-higher { background: #e3f2fd; }
+.nd-clue-lower  { background: #fce4ec; }
+.nd-clue-correct { background: #e8f5e9; }
+.nd-clue-arrow { font-size: 1.35rem; font-weight: 900; }
+.nd-clue-higher .nd-clue-arrow { color: #1976d2; }
+.nd-clue-lower  .nd-clue-arrow { color: #e91e63; }
+.nd-clue-correct .nd-clue-arrow { color: #4caf50; }
+.nd-clue-val { font-size: 1.05rem; font-weight: 800; font-family: 'Courier New', monospace; min-width: 72px; color: #222; }
+.nd-clue-msg { flex: 1; font-weight: 600; color: #555; }
+.nd-clue-temp { font-size: 0.82rem; font-weight: 700; white-space: nowrap; }
+
+/* Hard mode toggle on select screen */
+.nd-mode-row { text-align: center; margin-bottom: 22px; }
+.nd-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border: 2px solid #ccc;
+  border-radius: 50px;
+  background: #f5f5f5;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  color: #555;
+}
+.nd-mode-toggle.nd-mode-on {
+  border-color: #212121;
+  background: #212121;
+  color: #fff;
+}
+.nd-mode-icon { font-size: 1.2rem; }
+.nd-mode-switch {
+  width: 36px;
+  height: 20px;
+  border-radius: 50px;
+  background: #ccc;
+  position: relative;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.nd-mode-on .nd-mode-switch { background: #ff5722; }
+.nd-mode-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+.nd-mode-on .nd-mode-knob { left: 19px; }
+.nd-mode-desc { margin-top: 8px; font-size: 0.88rem; color: #e65100; font-weight: 600; }
+
+/* Hard pill in game header */
+.nd-game-top-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.nd-hard-pill {
+  background: #212121;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 50px;
+  letter-spacing: 1px;
+}
+
+/* Hint button */
+.nd-hint-row { text-align: center; margin-bottom: 10px; }
+.nd-hint-btn {
+  background: #fff3e0;
+  border: 2px solid #ffb74d;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e65100;
+  padding: 8px 22px;
+  cursor: pointer;
+  transition: all .18s;
+}
+.nd-hint-btn:hover { background: #ffe0b2; }
+.nd-hint-btn.nd-hint-open {
+  background: #e8f5e9;
+  border-color: #81c784;
+  color: #2e7d32;
+}
+
+/* Log peek mode (hard mode revealed) */
+.nd-log.nd-log-peek { border: 2px dashed #ffb74d; background: #fff8f0; animation: ndSlideIn .2s ease; }
+
+/* Hidden clues placeholder */
+.nd-hidden-clues {
+  text-align: center;
+  font-size: 0.88rem;
+  color: #bbb;
+  font-style: italic;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 10px;
+}
+
+/* Hard mode badge on win screen */
+.nd-hard-badge {
+  display: inline-block;
+  background: #212121;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 6px 18px;
+  border-radius: 50px;
+  margin-bottom: 14px;
+  animation: ndPop .5s .2s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+.nd-reveal-row { text-align: center; }
+.nd-reveal-btn {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: #aaa;
+  cursor: pointer;
+  padding: 4px 10px;
+  transition: color .15s;
+}
+.nd-reveal-btn:hover { color: #e53935; }
+
+/* Won screen */
+.nd-won { text-align: center; padding: 8px 0 4px; }
+.nd-won-title { font-size: 2rem; font-weight: 900; margin-bottom: 6px; }
+.nd-won-label { font-size: 0.9rem; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
+.nd-won-number {
+  display: inline-block;
+  font-size: 4rem;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  border: 3px solid;
+  border-radius: 18px;
+  padding: 16px 36px;
+  background: rgba(255,255,255,0.8);
+  margin-bottom: 20px;
+  animation: ndPop .55s cubic-bezier(.34,1.56,.64,1) both;
+}
+.nd-stars {
+  font-size: 3.2rem;
+  color: #ffd700;
+  letter-spacing: 6px;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 6px rgba(255,180,0,.4);
+  animation: ndPop .6s .08s cubic-bezier(.34,1.56,.64,1) both;
+}
+.nd-star-label { font-size: 1.25rem; font-weight: 800; color: #333; margin-bottom: 16px; }
+.nd-won-stats {
+  display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+  font-size: 1rem; color: #555; margin-bottom: 24px;
+}
+.nd-beat { color: #e65100; font-weight: 800; }
+.nd-btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Animations */
+@keyframes ndFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes ndGlyphPulse {
+  0%, 100% { opacity: 1; text-shadow: none; }
+  50%       { opacity: .45; text-shadow: 0 0 12px rgba(0,0,0,.2); }
+}
+@keyframes ndPop {
+  0%   { transform: scale(.5); opacity: 0; }
+  100% { transform: scale(1);  opacity: 1; }
+}
+@keyframes ndSlideIn {
+  from { transform: translateX(-16px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes ndShake {
+  0%   { transform: translateX(0); }
+  18%  { transform: translateX(-10px); }
+  36%  { transform: translateX(10px); }
+  54%  { transform: translateX(-7px); }
+  72%  { transform: translateX(7px); }
+  100% { transform: translateX(0); }
+}
+.nd-shake { animation: ndShake .4s ease; }
+
 /* ── Mobile responsive ── */
 @media (max-width: 600px) {
   .header { padding: 18px 12px 10px; }
@@ -1417,4 +1746,13 @@
   /* Riddle Machine */
   .riddle-input-row { flex-direction: column; }
   .riddle-input { font-size: 1rem; }
+
+  /* Number Detective */
+  .nd-level-grid { gap: 10px; }
+  .nd-level-card { padding: 16px 10px; }
+  .nd-lc-emoji { font-size: 2rem; }
+  .nd-mystery-glyphs { font-size: 2rem; letter-spacing: 8px; }
+  .nd-won-number { font-size: 2.8rem; padding: 12px 22px; }
+  .nd-input-row { flex-direction: column; }
+  .nd-guess-btn { width: 100%; }
 }
