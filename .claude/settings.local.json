@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(npm run:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "WebSearch",
+      "Bash(ls \"c:\\\\edu\\\\self-utils\\\\work\\\\vetti\\\\sam-fun-zone\"/*.md)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)"
     ]
   }
 }
