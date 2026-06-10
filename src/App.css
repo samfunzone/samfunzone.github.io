@@ -262,6 +262,7 @@
   margin-top: 12px;
 }
 .food-pick-btn {
+  animation: foodPickPop 0.5s cubic-bezier(.3,1.6,.5,1) backwards;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -289,6 +290,10 @@
 @keyframes foodEmojiBounce {
   0%, 100% { transform: translateY(0); }
   40%      { transform: translateY(-9px) scale(1.15); }
+}
+@keyframes foodPickPop {
+  from { transform: scale(.6); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
 }
 
 .food-layout {
@@ -323,6 +328,25 @@
   font-weight: bold;
   color: #e65100;
   gap: 8px;
+  overflow: hidden;
+}
+.cook-emoji { display: inline-block; animation: foodCookBounce 0.7s ease-in-out infinite alternate; }
+@keyframes foodCookBounce {
+  from { transform: translateY(0) rotate(-8deg) scale(1); }
+  to   { transform: translateY(-10px) rotate(8deg) scale(1.15); }
+}
+.cook-rise {
+  position: absolute;
+  bottom: 8px;
+  font-size: 1.3rem;
+  opacity: 0;
+  pointer-events: none;
+  animation: foodCookRise 1.4s ease-in infinite;
+}
+@keyframes foodCookRise {
+  0%   { transform: translateY(0) scale(.7); opacity: 0; }
+  25%  { opacity: .9; }
+  100% { transform: translateY(-110px) scale(1.2); opacity: 0; }
 }
 .food-controls { flex: 1 1 260px; }
 .food-controls h3 { font-size: 1.2rem; color: #bf360c; margin-bottom: 4px; }
@@ -419,6 +443,44 @@
   50%      { box-shadow: 0 0 0 10px rgba(76,175,80,0); }
 }
 
+/* Melty drips grow downward after their ingredient lands (mount-once) */
+.food-drip {
+  transform-box: fill-box;
+  transform-origin: center top;
+  animation: foodDripGrow 0.9s cubic-bezier(.25,1.2,.5,1) backwards;
+}
+@keyframes foodDripGrow {
+  from { transform: scaleY(0); opacity: 0; }
+  40%  { opacity: 1; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+/* Glossy sheen bar swept across the finished food (rendered inside a clip) */
+.food-sheen { opacity: 0; animation: foodSheenSweep 3.4s ease-in-out infinite; }
+@keyframes foodSheenSweep {
+  0%        { transform: translateX(0); opacity: 0; }
+  12%       { opacity: .6; }
+  45%, 100% { transform: translateX(340px); opacity: 0; }
+}
+
+/* Soft twinkle for salt / shiny garnish once served */
+.food-twinkle { animation: foodTwinkle 1.3s ease-in-out infinite; }
+@keyframes foodTwinkle {
+  0%, 100% { opacity: .45; }
+  50%      { opacity: 1; }
+}
+
+/* Gentle garnish wiggle (cherry, jalapeños, picks) on the done screen */
+.food-wiggle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: foodWiggle 2.2s ease-in-out infinite;
+}
+@keyframes foodWiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+
 /* Done screen */
 .food-done-panel {
   position: relative;
@@ -435,6 +497,20 @@
   box-shadow: 0 8px 24px rgba(230,81,0,.15), inset 0 1px 0 rgba(255,255,255,.6);
 }
 .food-done-name { font-size: 1.15rem; font-weight: bold; color: #bf360c; margin: 0; }
+.food-done-viz {
+  display: inline-block;
+  animation: foodTada 0.7s cubic-bezier(.3,1.5,.5,1),
+             foodHappyBob 3.6s ease-in-out 0.8s infinite;
+}
+@keyframes foodTada {
+  0%   { transform: scale(.5) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes foodHappyBob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-7px) rotate(1.2deg); }
+}
 .food-float {
   position: absolute;
   bottom: -36px;
@@ -452,6 +528,8 @@
 @media (prefers-reduced-motion: reduce) {
   .food-ing, .food-steam, .food-flame, .food-sparkle, .food-float,
   .food-cooking, .food-panel-in, .food-serve-ready,
+  .food-drip, .food-sheen, .food-twinkle, .food-wiggle,
+  .food-done-viz, .food-pick-btn, .cook-emoji, .cook-rise,
   .food-pick-btn:hover .food-pick-emoji, .ingredient-btn.added .ing-check {
     animation: none !important;
   }

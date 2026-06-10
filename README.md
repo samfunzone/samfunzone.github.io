@@ -8,20 +8,20 @@ A colorful, interactive React app built for kids — packed with games, creative
 
 | Tab | What it does |
 |-----|-------------|
-| 🦔 Whack-a-Mole | Whack the moles before the 30-second timer runs out |
 | 🧠 Memory Match | Flip cards to find matching emoji pairs — choose 8, 10, or 12 pairs; optional hard mode shuffles the board every 2 matches |
 | 😂 Joke Machine | Two-step kid-friendly joke reveal |
 | 🎨 Drawing | Freehand canvas with colors, brush size, undo, and save |
-| 🫧 Squishy Stuff | Draw your own shape, extrude it into 3D (Three.js), then stretch, squeeze & squish it |
+| 🫧 Squishy Stuff | Pick an emoji to squish, or draw your own shape and extrude it into 3D (Three.js), then stretch, squeeze & squish it |
 | 🧋 Making Boba | Step-by-step boba tea builder with a realistic, fully animated SVG cup — 8 teas pour in with a splash, glossy pearls bounce in, ice cubes plop, bubbles rise, condensation drips, sweetness live-tints the drink, then shake it to mix and finish with a dome lid, straw, and sparkles |
-| 🍽️ Yummy Food | Build a pizza, burger, ice cream, cake, or taco with animated SVG layers |
+| 🍽️ Yummy Food | Build 7 dishes — pizza, burger, sandwich, fries, ice cream, birthday cake, taco — from photorealistic animated SVG ingredients: toppings drop in, cheese melts and drips, candles flicker, scoops glide, then cook it and watch your dish get served with steam, sparkles, and a happy bounce |
 | 🪆 Dressing Dolls | Dress up an SVG doll — skin tone, 8 hair styles, tops, bottoms, dresses, shoes, hats & accessories; face expressions (eyes, brows, mouth); 6 scene backgrounds; one-click Randomize and themed quick-look presets (Princess, Beach, Sports, Artist, Party) |
-| ✨ Magic Loops | Draw colorful animated loops on a canvas; fill a magic meter to trigger a confetti burst |
 | 🏠 My Room | Drag furniture and decor onto a room canvas; customize wall color, floor style, and layout |
-| 🌸 Enchanted Garden | Pick a seed (Sunflower, Rose, Tulip, Daisy, Lavender, or Cherry Blossom), then use soil, water, and sunlight to grow your flower |
 | 📺 Family Feud | Survey-style guessing game — read the question, type your answer, and try to uncover all the top responses before 3 strikes. 5 random rounds drawn from a 75-question family-friendly pool; includes a Reveal Answers button |
 | 🧩 Riddle Machine | 50 lateral-thinking riddles with hints; shuffled deck so they never repeat |
 | 🔍 Number Detective | Guess a secret number (1–100 up to 1–100,000) using higher/lower clues and a hot/cold thermometer. Range bar shows the remaining candidates as a segment on the full number line. **Hard Mode** hides previous clues and the range boundary numbers — only the latest result is shown; tap 💡 to peek at history |
+| 🐠 Bubble Pop | 45-second underwater arcade popper — pop rising soap bubbles for points, chain combos for ×2/×3 multipliers, catch star and rainbow bubbles, dodge the grumpy ones; three speed settings |
+
+> Whack-a-Mole, Magic Loops, and Enchanted Garden exist in `src/components/` but are currently disabled (not in the `TABS` array).
 
 ## Getting Started
 

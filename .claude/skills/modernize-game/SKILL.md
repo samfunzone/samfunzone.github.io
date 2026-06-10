@@ -63,6 +63,17 @@ Helpers (`hexToRgb`, `mix`, `lighten`, `darken`) live at the top of
    `Math.random()` in render).
 6. **Detail garnish**: condensation droplets, drizzle stripes, surface ellipse,
    wavy edges via alternating `q` beziers.
+7. **Organic piles & stuffed shapes** (taco fillings, lettuce, crumbles): a thick
+   stroked path along a bezier (`strokeLinecap="round"`) gives a band that follows
+   a curve; add bump circles placed by a quadratic-point helper
+   (`t => [(1-t)²x₀ + 2t(1-t)xc + t²x₁, …]`) for ruffled/crumbly silhouettes.
+   For "contents spilling out of a container", prefer **two-layer occlusion**
+   (back shell → fillings → front shell drawn last) over clipPaths — fillings
+   just need their bottoms inside the front layer's band.
+8. **Texture sells realism**: seeds, char marks, flecks, crumb holes, browned
+   spots, concentric rings — a handful of small deterministic shapes per
+   ingredient beats one perfect gradient. Per-item texture that must stay inside
+   a shape (scoop specks) gets its own inline `clipPath` keyed by item id.
 
 ## Step 4 — Animation patterns (all CSS keyframes, no timers, no SMIL)
 
