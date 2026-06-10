@@ -11,6 +11,7 @@ import MakingYourRoom  from './components/MakingYourRoom';
 import FamilyFeud      from './components/FamilyFeud';
 import RiddleMachine      from './components/RiddleMachine';
 import NumberDetective    from './components/NumberDetective';
+import BubblePop          from './components/BubblePop';
 
 const TABS = [
   { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
@@ -24,6 +25,7 @@ const TABS = [
   { id: 'feud',     label: '📺 Family Feud',         component: <FamilyFeud /> },
   { id: 'riddle',   label: '🧩 Riddle Machine',      component: <RiddleMachine /> },
   { id: 'numdet',   label: '🔍 Number Detective',    component: <NumberDetective /> },
+  { id: 'bubbles',  label: '🐠 Bubble Pop',          component: <BubblePop /> },
 ];
 
 export default function App() {
