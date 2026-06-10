@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import './App.css';
-import WhackAMole    from './components/WhackAMole';
 import MemoryMatch   from './components/MemoryMatch';
 import JokeMachine   from './components/JokeMachine';
 import DrawingCanvas  from './components/DrawingCanvas';
@@ -8,15 +7,12 @@ import SquishyStuff  from './components/SquishyStuff';
 import MakingBoba      from './components/MakingBoba';
 import MakingYummyFood from './components/MakingYummyFood';
 import DressingDolls   from './components/DressingDolls';
-import MagicLoops      from './components/MagicLoops';
 import MakingYourRoom  from './components/MakingYourRoom';
-import EnchantedGarden from './components/EnchantedGarden';
 import FamilyFeud      from './components/FamilyFeud';
 import RiddleMachine      from './components/RiddleMachine';
 import NumberDetective    from './components/NumberDetective';
 
 const TABS = [
-  { id: 'whack',    label: '🦔 Whack-a-Mole',   component: <WhackAMole /> },
   { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
   { id: 'joke',     label: '😂 Joke Machine',     component: <JokeMachine /> },
   { id: 'draw',     label: '🎨 Drawing',           component: <DrawingCanvas /> },
@@ -24,16 +20,14 @@ const TABS = [
   { id: 'boba',     label: '🧋 Making Boba',       component: <MakingBoba /> },
   { id: 'food',     label: '🍽️ Yummy Food',        component: <MakingYummyFood /> },
   { id: 'dolls',    label: '🪆 Dressing Dolls',    component: <DressingDolls /> },
-  { id: 'loops',    label: '✨ Magic Loops',        component: <MagicLoops /> },
   { id: 'room',     label: '🏠 My Room',            component: <MakingYourRoom /> },
-  { id: 'garden',   label: '🌸 Enchanted Garden',   component: <EnchantedGarden /> },
   { id: 'feud',     label: '📺 Family Feud',         component: <FamilyFeud /> },
   { id: 'riddle',   label: '🧩 Riddle Machine',      component: <RiddleMachine /> },
   { id: 'numdet',   label: '🔍 Number Detective',    component: <NumberDetective /> },
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('whack');
+  const [activeTab, setActiveTab] = useState('memory');
 
   const current = TABS.find(t => t.id === activeTab);
 

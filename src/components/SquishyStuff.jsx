@@ -6,6 +6,8 @@ const PALETTE = [
   '#2196f3','#9c27b0','#e91e63','#20c997',
 ];
 
+const EMOJIS = ['😀','🐸','🐙','🍩','🍅','👻','🤖','🍕','🐱','🍓','🐹','🦄','🍔','😎','🐻','🍉'];
+
 function darken(hex) {
   const n = parseInt(hex.slice(1), 16);
   return `rgb(${Math.max(0,(n>>16)-50)},${Math.max(0,((n>>8)&0xff)-50)},${Math.max(0,(n&0xff)-50)})`;
@@ -21,12 +23,19 @@ function normalizePoints(pts) {
 }
 
 export default function SquishyStuff() {
-  const [phase, setPhase] = useState('draw');
+  const [phase, setPhase] = useState('pick');
   const [color, setColor] = useState('#ff6b6b');
   const [hint, setHint]   = useState('');
   const [sx, setSx] = useState(1);
   const [sy, setSy] = useState(1);
   const [sz, setSz] = useState(1);
+
+  // Emoji squish
+  const [emoji, setEmoji] = useState(null);
+  const [ex, setEx] = useState(1);
+  const [ey, setEy] = useState(1);
+  const emojiHandleDrag = useRef(null);
+  const emojiSquishTimers = useRef([]);
 
   // Draw
   const drawRef    = useRef(null);
@@ -104,6 +113,24 @@ export default function SquishyStuff() {
     setHint('');
     setPhase('play');
   };
+
+  const chooseEmoji = (e) => {
+    setEmoji(e);
+    setEx(1); setEy(1);
+    setPhase('emoji-play');
+  };
+
+  // ── Emoji squish (pure CSS transform, springy keyframes) ──
+  const squishEmoji = () => {
+    emojiSquishTimers.current.forEach(clearTimeout);
+    emojiSquishTimers.current = [];
+    setEx(1.6); setEy(0.45);
+    emojiSquishTimers.current.push(setTimeout(() => { setEx(0.8); setEy(1.25); }, 160));
+    emojiSquishTimers.current.push(setTimeout(() => { setEx(1.05); setEy(0.95); }, 320));
+    emojiSquishTimers.current.push(setTimeout(() => { setEx(1); setEy(1); }, 460));
+  };
+
+  useEffect(() => () => emojiSquishTimers.current.forEach(clearTimeout), []);
 
   // ── Three.js scene ──
   useEffect(() => {
@@ -308,12 +335,58 @@ export default function SquishyStuff() {
     handleDrag.current = { axis, startPos: pos, startScale: axis === 'x' ? sx : axis === 'y' ? sy : sz };
   };
 
+  // ── Emoji handle drag (2D stretch) ──
+  useEffect(() => {
+    if (phase !== 'emoji-play') return;
+    const onMove = (e) => {
+      if (!emojiHandleDrag.current) return;
+      const { axis, startPos, startScale } = emojiHandleDrag.current;
+      const cur = axis === 'x'
+        ? (e.touches ? e.touches[0].clientX : e.clientX)
+        : (e.touches ? e.touches[0].clientY : e.clientY);
+      const val = Math.max(0.2, Math.min(3.5, startScale + (cur - startPos) / 70));
+      if (axis === 'x') setEx(val);
+      else setEy(val);
+    };
+    const onUp = () => { emojiHandleDrag.current = null; };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend',  onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup',   onUp);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend',  onUp);
+    };
+  }, [phase]);
+
+  const startEmojiHandleDrag = (e, axis) => {
+    e.preventDefault(); e.stopPropagation();
+    const pos = axis === 'x'
+      ? (e.touches ? e.touches[0].clientX : e.clientX)
+      : (e.touches ? e.touches[0].clientY : e.clientY);
+    emojiHandleDrag.current = { axis, startPos: pos, startScale: axis === 'x' ? ex : ey };
+  };
+
   // ── Render ──
   return (
     <div className="card card-purple">
       <h2>🫧 Squishy Stuff!</h2>
 
-      {phase === 'draw' ? (
+      {phase === 'pick' ? (
+        <>
+          <p className="squishy-instruction">Pick an emoji to squish, or draw your own shape!</p>
+          <div className="squishy-emoji-grid">
+            {EMOJIS.map(e => (
+              <button key={e} className="squishy-emoji-btn" onClick={() => chooseEmoji(e)}>{e}</button>
+            ))}
+          </div>
+          <div className="btn-row">
+            <button className="btn btn-purple" onClick={() => setPhase('draw')}>✏️ Draw My Own Shape</button>
+          </div>
+        </>
+      ) : phase === 'draw' ? (
         <>
           <p className="squishy-instruction">Draw your own shape — it becomes 3D!</p>
           <div className="draw-controls">
@@ -333,6 +406,37 @@ export default function SquishyStuff() {
           />
           <div className="btn-row">
             <button className="btn btn-purple" onClick={doneDrawing}>Done! Make it 3D! 🎉</button>
+            <button className="btn btn-orange" onClick={() => setPhase('pick')}>↩️ Back</button>
+          </div>
+        </>
+      ) : phase === 'emoji-play' ? (
+        <>
+          <p className="squishy-instruction">
+            Pull the handles to <strong>stretch &amp; squeeze</strong> · Hit Squish for a bounce!
+          </p>
+
+          <div className="squishy-play-area squishy-emoji-area">
+            <span className="squishy-emoji-big" style={{ transform: `scale(${ex}, ${ey})` }}>
+              {emoji}
+            </span>
+
+            {/* ← → width handle */}
+            <div className="sq-handle sq-handle-h" title="Stretch sideways"
+              onMouseDown={e => startEmojiHandleDrag(e,'x')} onTouchStart={e => startEmojiHandleDrag(e,'x')}>↔</div>
+
+            {/* ↑ ↓ height handle */}
+            <div className="sq-handle sq-handle-v" title="Stretch up/down"
+              onMouseDown={e => startEmojiHandleDrag(e,'y')} onTouchStart={e => startEmojiHandleDrag(e,'y')}>↕</div>
+          </div>
+
+          <p style={{ textAlign:'center', fontSize:'.9rem', color:'#999', margin:'6px 0' }}>
+            ↔ {ex.toFixed(2)}x &nbsp;|&nbsp; ↕ {ey.toFixed(2)}x
+          </p>
+
+          <div className="btn-row">
+            <button className="btn btn-red"    onClick={squishEmoji}>💥 Squish!</button>
+            <button className="btn btn-orange" onClick={() => { setEx(1); setEy(1); }}>↺ Reset</button>
+            <button className="btn btn-purple" onClick={() => setPhase('pick')}>🔄 New Shape</button>
           </div>
         </>
       ) : (
@@ -365,7 +469,7 @@ export default function SquishyStuff() {
           <div className="btn-row">
             <button className="btn btn-red"    onClick={() => threeRef.current.squish?.()}>💥 Squish!</button>
             <button className="btn btn-orange" onClick={() => { setSx(1); setSy(1); setSz(1); }}>↺ Reset</button>
-            <button className="btn btn-purple" onClick={() => setPhase('draw')}>✏️ Draw Again</button>
+            <button className="btn btn-purple" onClick={() => setPhase('pick')}>🔄 New Shape</button>
           </div>
         </>
       )}
