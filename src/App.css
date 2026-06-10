@@ -269,7 +269,8 @@
   padding: 20px 10px;
   border: 3px solid #ffe0b2;
   border-radius: 20px;
-  background: #fff8f0;
+  background: linear-gradient(180deg, #fffdf9, #ffeed8);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 2px 6px rgba(230,81,0,.06);
   font-family: inherit;
   font-size: 1rem;
   font-weight: bold;
@@ -277,8 +278,18 @@
   transition: all .18s;
   color: #e65100;
 }
-.food-pick-btn:hover { background: #ffe0b2; border-color: #ff9800; transform: translateY(-4px); box-shadow: 0 6px 18px rgba(255,152,0,.2); }
-.food-pick-emoji { font-size: 3rem; }
+.food-pick-btn:hover {
+  background: linear-gradient(180deg, #fff3df, #ffdfb0);
+  border-color: #ff9800;
+  transform: translateY(-4px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 8px 20px rgba(255,152,0,.3);
+}
+.food-pick-emoji { display: inline-block; font-size: 3rem; }
+.food-pick-btn:hover .food-pick-emoji { animation: foodEmojiBounce 0.5s ease; }
+@keyframes foodEmojiBounce {
+  0%, 100% { transform: translateY(0); }
+  40%      { transform: translateY(-9px) scale(1.15); }
+}
 
 .food-layout {
   display: flex;
@@ -331,18 +342,120 @@
   padding: 10px 14px;
   border: 2px solid #ffe0b2;
   border-radius: 12px;
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff, #fffaf3);
   font-family: inherit;
   font-size: .95rem;
   cursor: pointer;
   transition: all .15s;
   text-align: left;
 }
-.ingredient-btn:hover   { border-color: #ff9800; background: #fff8f0; }
-.ingredient-btn.added   { background: #fff3e0; border-color: #ff9800; font-weight: bold; }
+.ingredient-btn:hover {
+  border-color: #ff9800;
+  background: linear-gradient(180deg, #fffdf8, #fff3e2);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(255,152,0,.15);
+}
+.ingredient-btn.added {
+  background: linear-gradient(180deg, #fff6e8, #ffe2bb);
+  border-color: #ff9800;
+  font-weight: bold;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 2px 8px rgba(255,152,0,.18);
+}
 .ingredient-btn.required { border-left: 4px solid #ff9800; }
-.ing-check { font-size: 1.1rem; flex-shrink: 0; }
+.ing-check { display: inline-block; font-size: 1.1rem; flex-shrink: 0; }
+.ingredient-btn.added .ing-check { animation: foodCheckPop 0.35s cubic-bezier(.3,1.6,.6,1); }
+@keyframes foodCheckPop {
+  0%   { transform: scale(.3); }
+  60%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
 .ing-star  { margin-left: auto; font-size: .9rem; flex-shrink: 0; }
+
+/* ── Yummy Food: panel + SVG animations ── */
+.food-panel-in { animation: foodPanelIn 0.35s ease backwards; }
+@keyframes foodPanelIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Mount-once ingredient entrance — needs stable keys + backwards fill */
+.food-ing { animation: foodIngDrop 0.55s cubic-bezier(.34,1.45,.64,1) backwards; }
+@keyframes foodIngDrop {
+  from { transform: translateY(-30px); opacity: 0; }
+  70%  { opacity: 1; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.food-steam { opacity: 0; animation: foodSteamRise 2.8s ease-in-out infinite; }
+@keyframes foodSteamRise {
+  0%   { transform: translateY(8px); opacity: 0; }
+  35%  { opacity: .5; }
+  100% { transform: translateY(-18px); opacity: 0; }
+}
+
+.food-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: foodFlameFlicker 0.9s ease-in-out infinite alternate;
+}
+@keyframes foodFlameFlicker {
+  from { transform: scale(1); }
+  to   { transform: scale(1.18) skewX(4deg); }
+}
+
+.food-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: foodSparkle 1.6s ease-in-out infinite;
+}
+@keyframes foodSparkle {
+  0%, 100% { transform: scale(.4); opacity: .25; }
+  50%      { transform: scale(1);  opacity: 1; }
+}
+
+.food-serve-ready { animation: foodServePulse 1.6s ease infinite; }
+@keyframes foodServePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(76,175,80,.5); }
+  50%      { box-shadow: 0 0 0 10px rgba(76,175,80,0); }
+}
+
+/* Done screen */
+.food-done-panel {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 8px;
+}
+.food-done-card {
+  display: inline-block;
+  padding: 14px 26px;
+  border: 2px solid #ffcc80;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255,255,255,.92), rgba(255,243,224,.85));
+  box-shadow: 0 8px 24px rgba(230,81,0,.15), inset 0 1px 0 rgba(255,255,255,.6);
+}
+.food-done-name { font-size: 1.15rem; font-weight: bold; color: #bf360c; margin: 0; }
+.food-float {
+  position: absolute;
+  bottom: -36px;
+  font-size: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  animation: foodFloatUp 4s linear infinite;
+}
+@keyframes foodFloatUp {
+  0%   { transform: translateY(0); opacity: 0; }
+  15%  { opacity: .9; }
+  100% { transform: translateY(-340px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .food-ing, .food-steam, .food-flame, .food-sparkle, .food-float,
+  .food-cooking, .food-panel-in, .food-serve-ready,
+  .food-pick-btn:hover .food-pick-emoji, .ingredient-btn.added .ing-check {
+    animation: none !important;
+  }
+}
 
 /* ── Making Boba ── */
 .boba-layout {
