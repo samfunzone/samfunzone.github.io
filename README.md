@@ -13,7 +13,7 @@ A colorful, interactive React app built for kids — packed with games, creative
 | 😂 Joke Machine | Two-step kid-friendly joke reveal |
 | 🎨 Drawing | Freehand canvas with colors, brush size, undo, and save |
 | 🫧 Squishy Stuff | Draw your own shape, extrude it into 3D (Three.js), then stretch, squeeze & squish it |
-| 🧋 Making Boba | Step-by-step boba tea builder with a live SVG cup preview |
+| 🧋 Making Boba | Step-by-step boba tea builder with a realistic, fully animated SVG cup — 8 teas pour in with a splash, glossy pearls bounce in, ice cubes plop, bubbles rise, condensation drips, sweetness live-tints the drink, then shake it to mix and finish with a dome lid, straw, and sparkles |
 | 🍽️ Yummy Food | Build a pizza, burger, ice cream, cake, or taco with animated SVG layers |
 | 🪆 Dressing Dolls | Dress up an SVG doll — skin tone, 8 hair styles, tops, bottoms, dresses, shoes, hats & accessories; face expressions (eyes, brows, mouth); 6 scene backgrounds; one-click Randomize and themed quick-look presets (Princess, Beach, Sports, Artist, Party) |
 | ✨ Magic Loops | Draw colorful animated loops on a canvas; fill a magic meter to trigger a confetti burst |
