@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
+import { lighten, darken } from '../utils/color';
 
 const PALETTE = [
   '#ff6b6b','#ff9800','#ffd93d','#4caf50',
@@ -8,9 +9,43 @@ const PALETTE = [
 
 const EMOJIS = ['😀','🐸','🐙','🍩','🍅','👻','🤖','🍕','🐱','🍓','🐹','🦄','🍔','😎','🐻','🍉'];
 
-function darken(hex) {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgb(${Math.max(0,(n>>16)-50)},${Math.max(0,((n>>8)&0xff)-50)},${Math.max(0,(n&0xff)-50)})`;
+/* Confetti-style pop when Squish! is hit — remounts (and replays) via key={id}.
+   Particles end invisible, so they carry base opacity: 0 in CSS. */
+function SquishBurst({ id }) {
+  if (!id) return null;
+  return (
+    <div className="sq-burst" key={id} aria-hidden="true">
+      {Array.from({ length: 10 }, (_, i) => {
+        const ang = (i / 10) * Math.PI * 2;
+        const dist = 70 + ((i * 37) % 45);
+        const c = PALETTE[i % PALETTE.length];
+        return (
+          <span key={i} style={{
+            '--dx': `${Math.round(Math.cos(ang) * dist)}px`,
+            '--dy': `${Math.round(Math.sin(ang) * dist * 0.7) - 30}px`,
+            background: `radial-gradient(circle at 35% 30%, ${lighten(c, .5)}, ${c})`,
+            animationDelay: `${(i % 5) * 25}ms`,
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+/* Ambient soap bubbles drifting up the emoji stage (deterministic sizes/timing). */
+function AmbientBubbles() {
+  return (
+    <div className="sq-ambient" aria-hidden="true">
+      {Array.from({ length: 7 }, (_, i) => (
+        <span key={i} className="sq-bubble" style={{
+          left: `${6 + i * 14}%`,
+          width: `${14 + (i * 19) % 26}px`,
+          animationDuration: `${6 + (i % 4) * 1.7}s`,
+          animationDelay: `${i * 0.9}s`,
+        }} />
+      ))}
+    </div>
+  );
 }
 
 function normalizePoints(pts) {
@@ -26,6 +61,7 @@ export default function SquishyStuff() {
   const [phase, setPhase] = useState('pick');
   const [color, setColor] = useState('#ff6b6b');
   const [hint, setHint]   = useState('');
+  const [burstId, setBurstId] = useState(0);
   const [sx, setSx] = useState(1);
   const [sy, setSy] = useState(1);
   const [sz, setSz] = useState(1);
@@ -99,7 +135,7 @@ export default function SquishyStuff() {
     ctx.closePath();
     ctx.fillStyle = color;
     ctx.fill();
-    ctx.strokeStyle = darken(color);
+    ctx.strokeStyle = darken(color, 0.25);
     ctx.lineWidth = 4;
     ctx.stroke();
   };
@@ -124,6 +160,7 @@ export default function SquishyStuff() {
   const squishEmoji = () => {
     emojiSquishTimers.current.forEach(clearTimeout);
     emojiSquishTimers.current = [];
+    setBurstId(b => b + 1);
     setEx(1.6); setEy(0.45);
     emojiSquishTimers.current.push(setTimeout(() => { setEx(0.8); setEy(1.25); }, 160));
     emojiSquishTimers.current.push(setTimeout(() => { setEx(1.05); setEy(0.95); }, 320));
@@ -136,15 +173,15 @@ export default function SquishyStuff() {
   useEffect(() => {
     if (phase !== 'play' || !mountRef.current) return;
 
-    const W = mountRef.current.clientWidth || 700;
+    const mount = mountRef.current;
+    const W = mount.clientWidth || 700;
     const H = 420;
 
-    // Scene
+    // Scene — transparent; the dreamy gradient backdrop is CSS on .three-mount
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0e6ff);
 
     // Subtle grid floor for depth perception
-    const grid = new THREE.GridHelper(20, 20, 0xddbbff, 0xddbbff);
+    const grid = new THREE.GridHelper(20, 20, 0xd9c2ff, 0xe6d8ff);
     grid.position.y = -3;
     scene.add(grid);
 
@@ -153,15 +190,16 @@ export default function SquishyStuff() {
     camera.position.set(0, 0.5, 9);
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    mountRef.current.appendChild(renderer.domElement);
+    renderer.shadowMap.type = THREE.PCFShadowMap; // PCFSoft was removed in three r183
+    mount.appendChild(renderer.domElement);
 
     // Lights
     scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xd8c5ff, 0.45));
 
     const key = new THREE.DirectionalLight(0xffffff, 1.4);
     key.position.set(5, 8, 6);
@@ -202,10 +240,13 @@ export default function SquishyStuff() {
     });
     geo.center();
 
-    const mat = new THREE.MeshPhongMaterial({
+    // Clearcoat gives the squishy-toy jelly gloss Phong can't
+    const mat = new THREE.MeshPhysicalMaterial({
       color: parseInt(savedColor.current.replace('#', ''), 16),
-      shininess: 100,
-      specular: new THREE.Color(0.3, 0.3, 0.3),
+      roughness: 0.28,
+      metalness: 0,
+      clearcoat: 0.9,
+      clearcoatRoughness: 0.25,
     });
 
     const mesh = new THREE.Mesh(geo, mat);
@@ -277,12 +318,12 @@ export default function SquishyStuff() {
 
     // Resize observer
     const ro = new ResizeObserver(() => {
-      const w = mountRef.current?.clientWidth || W;
+      const w = mount.clientWidth || W;
       renderer.setSize(w, H);
       camera.aspect = w / H;
       camera.updateProjectionMatrix();
     });
-    if (mountRef.current) ro.observe(mountRef.current);
+    ro.observe(mount);
 
     return () => {
       cancelAnimationFrame(rafId);
@@ -294,7 +335,7 @@ export default function SquishyStuff() {
       renderer.dispose();
       geo.dispose();
       mat.dispose();
-      mountRef.current?.removeChild(renderer.domElement);
+      mount.removeChild(renderer.domElement);
       threeRef.current = {};
     };
   }, [phase]);
@@ -375,24 +416,27 @@ export default function SquishyStuff() {
       <h2>🫧 Squishy Stuff!</h2>
 
       {phase === 'pick' ? (
-        <>
+        <div className="sq-panel">
           <p className="squishy-instruction">Pick an emoji to squish, or draw your own shape!</p>
           <div className="squishy-emoji-grid">
-            {EMOJIS.map(e => (
-              <button key={e} className="squishy-emoji-btn" onClick={() => chooseEmoji(e)}>{e}</button>
+            {EMOJIS.map((e, i) => (
+              <button key={e} className="squishy-emoji-btn"
+                style={{ animationDelay: `${(i % 8) * 45}ms` }}
+                onClick={() => chooseEmoji(e)}>{e}</button>
             ))}
           </div>
           <div className="btn-row">
             <button className="btn btn-purple" onClick={() => setPhase('draw')}>✏️ Draw My Own Shape</button>
           </div>
-        </>
+        </div>
       ) : phase === 'draw' ? (
-        <>
+        <div className="sq-panel">
           <p className="squishy-instruction">Draw your own shape — it becomes 3D!</p>
           <div className="draw-controls">
             {PALETTE.map(c => (
               <div key={c} className={`color-swatch${color === c ? ' active' : ''}`}
-                style={{ background: c }} onClick={() => setColor(c)} />
+                style={{ background: `radial-gradient(circle at 35% 30%, ${lighten(c, .55)}, ${c} 60%, ${darken(c, .35)})` }}
+                onClick={() => setColor(c)} />
             ))}
           </div>
           {hint && <p style={{ textAlign:'center', color:'#e65100', marginBottom:8 }}>{hint}</p>}
@@ -408,17 +452,30 @@ export default function SquishyStuff() {
             <button className="btn btn-purple" onClick={doneDrawing}>Done! Make it 3D! 🎉</button>
             <button className="btn btn-orange" onClick={() => setPhase('pick')}>↩️ Back</button>
           </div>
-        </>
+        </div>
       ) : phase === 'emoji-play' ? (
-        <>
+        <div className="sq-panel">
           <p className="squishy-instruction">
             Pull the handles to <strong>stretch &amp; squeeze</strong> · Hit Squish for a bounce!
           </p>
 
           <div className="squishy-play-area squishy-emoji-area">
-            <span className="squishy-emoji-big" style={{ transform: `scale(${ex}, ${ey})` }}>
-              {emoji}
-            </span>
+            <AmbientBubbles />
+
+            {/* key={emoji} replays the drop-in when a new emoji is picked.
+                Outer stage owns the entrance animation; the inner span owns the
+                inline squish transform (a running animation would override it). */}
+            <div className="sq-emoji-stage" key={emoji}>
+              <span className="sq-emoji-shadow" style={{
+                transform: `translateX(-50%) scaleX(${ex})`,
+                opacity: Math.max(0.25, Math.min(0.8, 0.55 / ey)),
+              }} />
+              <span className="squishy-emoji-big" style={{ transform: `scale(${ex}, ${ey})` }}>
+                {emoji}
+              </span>
+            </div>
+
+            <SquishBurst id={burstId} />
 
             {/* ← → width handle */}
             <div className="sq-handle sq-handle-h" title="Stretch sideways"
@@ -438,9 +495,9 @@ export default function SquishyStuff() {
             <button className="btn btn-orange" onClick={() => { setEx(1); setEy(1); }}>↺ Reset</button>
             <button className="btn btn-purple" onClick={() => setPhase('pick')}>🔄 New Shape</button>
           </div>
-        </>
+        </div>
       ) : (
-        <>
+        <div className="sq-panel">
           <p className="squishy-instruction">
             Drag the shape to <strong>rotate</strong> · Pull handles to <strong>stretch &amp; squeeze</strong>
           </p>
@@ -448,6 +505,8 @@ export default function SquishyStuff() {
           <div className="squishy-play-area">
             {/* Three.js mounts here */}
             <div ref={mountRef} className="three-mount" />
+
+            <SquishBurst id={burstId} />
 
             {/* ← → width handle */}
             <div className="sq-handle sq-handle-h" title="Stretch sideways"
@@ -467,11 +526,11 @@ export default function SquishyStuff() {
           </p>
 
           <div className="btn-row">
-            <button className="btn btn-red"    onClick={() => threeRef.current.squish?.()}>💥 Squish!</button>
+            <button className="btn btn-red"    onClick={() => { threeRef.current.squish?.(); setBurstId(b => b + 1); }}>💥 Squish!</button>
             <button className="btn btn-orange" onClick={() => { setSx(1); setSy(1); setSz(1); }}>↺ Reset</button>
             <button className="btn btn-purple" onClick={() => setPhase('pick')}>🔄 New Shape</button>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
