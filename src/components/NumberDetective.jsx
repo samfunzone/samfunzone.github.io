@@ -27,6 +27,10 @@ function proximity(guess, secret, max) {
   return               { label: 'FREEZING',  emoji: '🧊', color: '#80deea' };
 }
 
+function randomSecret(max) {
+  return Math.floor(Math.random() * max) + 1;
+}
+
 function getStars(guesses, optimal) {
   if (guesses <= optimal)                  return 3;
   if (guesses <= Math.ceil(optimal * 1.5)) return 2;
@@ -49,7 +53,7 @@ export default function NumberDetective() {
 
   function startGame(lv) {
     setLevel(lv);
-    setSecret(Math.floor(Math.random() * lv.max) + 1);
+    setSecret(randomSecret(lv.max));
     setInput('');
     setHistory([]);
     setLo(1);

@@ -791,8 +791,12 @@ function shuffle(arr) {
   return a;
 }
 
+function pickOrder() {
+  return shuffle(QUESTIONS.map((_, i) => i)).slice(0, TOTAL_ROUNDS);
+}
+
 export default function FamilyFeud() {
-  const questionOrder = useRef(shuffle(QUESTIONS.map((_, i) => i)).slice(0, TOTAL_ROUNDS));
+  const [questionOrder, setQuestionOrder] = useState(pickOrder);
   const [roundIndex, setRoundIndex] = useState(0);       // 0..TOTAL_ROUNDS-1
   const [revealed, setRevealed]     = useState([]);       // indices of revealed answers
   const [strikes, setStrikes]       = useState(0);
@@ -804,7 +808,7 @@ export default function FamilyFeud() {
   const [shakeBoard, setShakeBoard] = useState(false);
   const inputRef = useRef(null);
 
-  const qIdx = questionOrder.current[roundIndex];
+  const qIdx = questionOrder[roundIndex];
   const q    = QUESTIONS[qIdx];
 
   // ── Guess handler ──────────────────────────────────────────────────────────
@@ -836,7 +840,7 @@ export default function FamilyFeud() {
       launchConfetti(window.innerWidth / 2, 300, 18);
 
       if (newRevealed.length === q.answers.length) {
-        endRound(newRoundScore, strikes);
+        endRound(newRoundScore);
       }
     } else {
       const newStrikes = strikes + 1;
@@ -845,7 +849,7 @@ export default function FamilyFeud() {
       setTimeout(() => setShakeBoard(false), 600);
       if (newStrikes >= MAX_STRIKES) {
         setFeedback({ text: 'Three strikes! Round over! ❌', good: false });
-        endRound(roundScore, newStrikes);
+        endRound(roundScore);
       } else {
         setFeedback({ text: `Strike ${newStrikes}! Try again! ❌`, good: false });
       }
@@ -857,7 +861,7 @@ export default function FamilyFeud() {
     }, 1600);
   }
 
-  function endRound(finalRoundScore, _strikes) {
+  function endRound(finalRoundScore) {
     setTotalScore(prev => prev + finalRoundScore);
     setPhase('round-end');
     // Reveal all remaining answers
@@ -881,7 +885,7 @@ export default function FamilyFeud() {
   }
 
   function restartGame() {
-    questionOrder.current = shuffle(QUESTIONS.map((_, i) => i)).slice(0, TOTAL_ROUNDS);
+    setQuestionOrder(pickOrder());
     setRoundIndex(0);
     setRevealed([]);
     setStrikes(0);

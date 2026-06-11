@@ -398,8 +398,11 @@ function checkAnswer(input, riddle) {
 }
 
 export default function RiddleMachine() {
-  const deck = useRef(shuffle(RIDDLES.map((_, i) => i)));
-  const [riddleIdx, setRiddleIdx]   = useState(() => deck.current.shift());
+  // Deal the first riddle from state (refs can't be read during render);
+  // the ref keeps the rest of the deck for event handlers to draw from.
+  const [initialDeal] = useState(() => shuffle(RIDDLES.map((_, i) => i)));
+  const deck = useRef(initialDeal.slice(1));
+  const [riddleIdx, setRiddleIdx]   = useState(initialDeal[0]);
   const [phase, setPhase]           = useState('guessing'); // guessing | correct | wrong | revealed
   const [input, setInput]           = useState('');
   const [hintShown, setHintShown]   = useState(false);

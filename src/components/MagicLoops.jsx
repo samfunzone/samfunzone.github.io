@@ -24,7 +24,8 @@ export default function MagicLoops() {
   const [magic,   setMagic]   = useState(false);
   const [total,   setTotal]   = useState(0);
 
-  paletteRef.current = palette;
+  // Keep the ref in sync so the canvas draw loop reads the current palette
+  useEffect(() => { paletteRef.current = palette; }, [palette]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
