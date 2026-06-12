@@ -12,6 +12,8 @@ import FamilyFeud      from './components/FamilyFeud';
 import RiddleMachine      from './components/RiddleMachine';
 import NumberDetective    from './components/NumberDetective';
 import BubblePop          from './components/BubblePop';
+import WordSearch         from './components/WordSearch';
+import Unscramble         from './components/Unscramble';
 
 const TABS = [
   { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
@@ -26,6 +28,8 @@ const TABS = [
   { id: 'riddle',   label: '🧩 Riddle Machine',      component: <RiddleMachine /> },
   { id: 'numdet',   label: '🔍 Number Detective',    component: <NumberDetective /> },
   { id: 'bubbles',  label: '🐠 Bubble Pop',          component: <BubblePop /> },
+  { id: 'wordsearch', label: '🔍 Word Search',       component: <WordSearch /> },
+  { id: 'unscramble', label: '🔤 Unscramble',        component: <Unscramble /> },
 ];
 
 export default function App() {
