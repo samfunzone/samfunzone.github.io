@@ -14,6 +14,7 @@ import NumberDetective    from './components/NumberDetective';
 import BubblePop          from './components/BubblePop';
 import WordSearch         from './components/WordSearch';
 import Unscramble         from './components/Unscramble';
+import DoodleDance        from './components/DoodleDance';
 
 const TABS = [
   { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
@@ -30,6 +31,7 @@ const TABS = [
   { id: 'bubbles',  label: '🐠 Bubble Pop',          component: <BubblePop /> },
   { id: 'wordsearch', label: '🔍 Word Search',       component: <WordSearch /> },
   { id: 'unscramble', label: '🔤 Unscramble',        component: <Unscramble /> },
+  { id: 'doodle',     label: '✏️ Doodle Dance',       component: <DoodleDance /> },
 ];
 
 export default function App() {

@@ -2849,6 +2849,47 @@
   .un-gain, .un-score, .un-streak, .un-won-score, .un-stars, .un-recap-item { animation: none !important; }
 }
 
+/* ── Doodle Dance ── */
+.doodle-hint { color: #555; margin-bottom: 12px; }
+
+.doodle-toolbar { margin-bottom: 10px; }
+.doodle-swatch-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.doodle-swatch {
+  width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent;
+  cursor: pointer; transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+.doodle-swatch:hover  { transform: scale(1.15); }
+.doodle-swatch.active { border-color: #ff6b6b; transform: scale(1.18); }
+
+.doodle-size-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.doodle-size-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 50px; border: 2px solid #ffc9c9;
+  background: #fff; font-family: inherit; font-weight: 700; color: #555;
+  cursor: pointer; transition: transform .15s, background .15s;
+}
+.doodle-size-btn:hover  { background: #fff5f5; transform: translateY(-2px); }
+.doodle-size-btn.active { background: #ff6b6b; color: #fff; border-color: #ff6b6b; }
+.doodle-size-dot { display: inline-block; border-radius: 50%; background: currentColor; }
+
+.doodle-canvas {
+  display: block; width: 100%; height: 360px;
+  border-radius: 16px; border: 3px dashed #ff6b6b;
+  background: #fffafa; cursor: crosshair; touch-action: none;
+  margin-bottom: 12px;
+}
+.doodle-canvas-dance { cursor: default; border-style: solid; }
+
+.doodle-style-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+.doodle-style-btn {
+  padding: 8px 18px; border-radius: 50px; border: 2px solid #ffc9c9;
+  background: #fff; font-family: inherit; font-weight: 700; color: #555;
+  cursor: pointer; transition: transform .15s, background .15s;
+}
+.doodle-style-btn:hover  { background: #fff5f5; transform: translateY(-2px); }
+.doodle-style-btn.active { background: #ff6b6b; color: #fff; border-color: #ff6b6b; }
+
 /* ── Mobile responsive ── */
 @media (max-width: 600px) {
   .header { padding: 18px 12px 10px; }
@@ -2918,6 +2959,10 @@
   .un-bubble { width: 76px; height: 76px; font-size: 2.1rem; }
   .un-won-score { font-size: 2.2rem; padding: 8px 24px; }
   .un-action-btn { font-size: .82rem; padding: 7px 13px; }
+
+  /* Doodle Dance */
+  .doodle-canvas { height: 280px; }
+  .doodle-swatch { width: 28px; height: 28px; }
 
   /* Number Detective */
   .nd-level-grid { gap: 10px; }
