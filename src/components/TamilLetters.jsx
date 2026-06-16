@@ -50,10 +50,10 @@ const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 // Clips are accurate native-voice recordings; `say()` falls back to browser TTS if one is missing.
 const AUDIO_BASE = `${import.meta.env.BASE_URL}audio/tamil/`;
 const SOUND = new Map();
-UYIR.forEach((u, vi) => SOUND.set(u.base, `ta_v${vi}.mp3`));
+UYIR.forEach((u, vi) => SOUND.set(u.base, `ta_v${vi}.mp3`));         // 12 உயிர்
 MEY.forEach((m, ci) => {
-  SOUND.set(m.pulli, `ta_c${ci}_v0.mp3`);           // consonant → its bare "ka" sound
-  UYIR.forEach((u, vi) => SOUND.set(compose(m, u), `ta_c${ci}_v${vi}.mp3`));
+  SOUND.set(m.pulli, `ta_m${ci}.mp3`);                              // 18 மெய் (pulli sound)
+  UYIR.forEach((u, vi) => SOUND.set(compose(m, u), `ta_c${ci}_v${vi}.mp3`)); // 216 உயிர்மெய்
 });
 const say = text => {
   const clip = SOUND.get(text);
