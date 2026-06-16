@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, Fragment } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { shuffle } from '../utils/shuffle';
-import { speak, hasTamilVoice } from '../utils/speech';
+import { speak, playClip } from '../utils/speech';
 
 // 12 உயிர் (vowels): standalone letter + combining sign + roman vowel sound.
 const UYIR = [
@@ -46,23 +46,29 @@ const compose = (m, u) => m.cons + u.sign;          // க + ா = கா
 const roman = (m, u) => m.tr + u.tr;                 // k + aa = kaa
 const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
+// Map every Tamil glyph the game can speak → its bundled audio clip (public/audio/tamil/).
+// Clips are accurate native-voice recordings; `say()` falls back to browser TTS if one is missing.
+const AUDIO_BASE = `${import.meta.env.BASE_URL}audio/tamil/`;
+const SOUND = new Map();
+UYIR.forEach((u, vi) => SOUND.set(u.base, `ta_v${vi}.mp3`));
+MEY.forEach((m, ci) => {
+  SOUND.set(m.pulli, `ta_c${ci}_v0.mp3`);           // consonant → its bare "ka" sound
+  UYIR.forEach((u, vi) => SOUND.set(compose(m, u), `ta_c${ci}_v${vi}.mp3`));
+});
+const say = text => {
+  const clip = SOUND.get(text);
+  if (clip) playClip(AUDIO_BASE + clip, text);
+  else speak(text);
+};
+
 export default function TamilLetters() {
   const [mode, setMode] = useState(null); // null | learn | mix | listen
-  const [noVoice, setNoVoice] = useState(false);
-
-  useEffect(() => {
-    const check = () => setNoVoice(!hasTamilVoice());
-    check();
-    const synth = window.speechSynthesis;
-    synth?.addEventListener?.('voiceschanged', check);
-    return () => synth?.removeEventListener?.('voiceschanged', check);
-  }, []);
 
   const back = () => setMode(null);
   if (mode === 'learn')  return <LearnMode  onBack={back} />;
   if (mode === 'mix')    return <MixMode    onBack={back} />;
-  if (mode === 'listen') return <ListenMode onBack={back} noVoice={noVoice} />;
-  return <StartScreen onPick={setMode} noVoice={noVoice} />;
+  if (mode === 'listen') return <ListenMode onBack={back} />;
+  return <StartScreen onPick={setMode} />;
 }
 
 /* ─────────────── Start screen ─────────────── */
@@ -72,7 +78,7 @@ const MODES = [
   { id: 'listen', emoji: '👂', title: 'Listen & Find',  sub: 'Hear a letter, then tap the right one',          color: '#10b981' },
 ];
 
-function StartScreen({ onPick, noVoice }) {
+function StartScreen({ onPick }) {
   return (
     <div className="card card-purple tl-card" style={{ '--tl-accent': '#8b5cf6' }}>
       <div className="tl-hero">
@@ -80,11 +86,6 @@ function StartScreen({ onPick, noVoice }) {
         <h2>Tamil Tango</h2>
         <p className="tl-hero-sub">தமிழ் எழுத்து — dance the letters together!</p>
       </div>
-      {noVoice && (
-        <div className="tl-voice-tip">
-          🔈 This device has no Tamil voice, so sound may be silent — every letter still shows its English spelling (like “kaa”).
-        </div>
-      )}
       <div className="tl-mode-grid">
         {MODES.map((m, i) => (
           <button
@@ -119,7 +120,7 @@ function LearnMode({ onBack }) {
             <span className="tl-bd-piece">{sel.u.base}</span>
             <span className="tl-bd-op">=</span>
             <span key={compose(sel.m, sel.u)} className="tl-bd-answer">{compose(sel.m, sel.u)}</span>
-            <button className="tl-bd-say" onClick={() => speak(compose(sel.m, sel.u))} aria-label="Hear it">🔊</button>
+            <button className="tl-bd-say" onClick={() => say(compose(sel.m, sel.u))} aria-label="Hear it">🔊</button>
             <span className="tl-bd-roman">{roman(sel.m, sel.u)}</span>
           </>
         ) : (
@@ -131,14 +132,14 @@ function LearnMode({ onBack }) {
         <div className="tl-grid" style={{ gridTemplateColumns: `auto repeat(${UYIR.length}, 1fr)` }}>
           <div className="tl-cell tl-corner">மெய் ／ உயிர்</div>
           {UYIR.map(u => (
-            <button key={u.base} className="tl-cell tl-head" onClick={() => speak(u.base)}>
+            <button key={u.base} className="tl-cell tl-head" onClick={() => say(u.base)}>
               <span className="tl-head-letter">{u.base}</span>
               <span className="tl-head-tr">{u.tr}</span>
             </button>
           ))}
           {MEY.map((m, r) => (
             <Fragment key={m.pulli}>
-              <button className="tl-cell tl-head" onClick={() => speak(m.pulli)}>
+              <button className="tl-cell tl-head" onClick={() => say(m.pulli)}>
                 <span className="tl-head-letter">{m.pulli}</span>
                 <span className="tl-head-tr">{m.tr}</span>
               </button>
@@ -149,7 +150,7 @@ function LearnMode({ onBack }) {
                     key={u.base}
                     className={`tl-cell tl-body${active ? ' tl-active' : ''}`}
                     style={{ animationDelay: `${(r + c) * 12}ms` }}
-                    onClick={() => { setSel({ m, u }); speak(compose(m, u)); }}
+                    onClick={() => { setSel({ m, u }); say(compose(m, u)); }}
                   >
                     {compose(m, u)}
                   </button>
@@ -215,7 +216,7 @@ function MixMode({ onBack }) {
     if (status !== 'asking') return;
     const correct = compose(q.m, q.u);
     setPicked(opt);
-    speak(opt); // sound out the letter they guessed, right or wrong
+    say(opt); // sound out the letter they guessed, right or wrong
     if (opt === correct) {
       setStatus('right');
       const pts = Math.max(100 - wrongs * 25, 25) + streak * 10;
@@ -258,11 +259,11 @@ function MixMode({ onBack }) {
       <Dots round={round} recap={recap} />
 
       <div className="tl-mix-stage">
-        <button className="tl-mix-piece" onClick={() => speak(q.m.pulli)}>
+        <button className="tl-mix-piece" onClick={() => say(q.m.pulli)}>
           <span>{q.m.pulli}</span><small>{q.m.tr}</small>
         </button>
         <span className="tl-mix-op">➕</span>
-        <button className="tl-mix-piece" onClick={() => speak(q.u.base)}>
+        <button className="tl-mix-piece" onClick={() => say(q.u.base)}>
           <span>{q.u.base}</span><small>{q.u.tr}</small>
         </button>
         <span className="tl-mix-op">=</span>
@@ -312,7 +313,7 @@ function makeListenDeck() {
   return deck;
 }
 
-function ListenMode({ onBack, noVoice }) {
+function ListenMode({ onBack }) {
   const [deck, setDeck]     = useState(makeListenDeck);
   const [round, setRound]   = useState(0);
   const [score, setScore]   = useState(0);
@@ -332,9 +333,9 @@ function ListenMode({ onBack, noVoice }) {
 
   const q = deck[round];
 
-  // Speak the target whenever a new round starts.
+  // Play the target whenever a new round starts.
   useEffect(() => {
-    if (!done && q) speak(q.target);
+    if (!done && q) say(q.target);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round, done]);
 
@@ -343,7 +344,7 @@ function ListenMode({ onBack, noVoice }) {
     setPicked(opt);
     if (opt === q.target) {
       setStatus('right');
-      speak(q.target);
+      say(q.target);
       const pts = Math.max(100 - wrongs * 25, 25) + streak * 10;
       setScore(s => s + pts);
       setStreak(k => k + 1);
@@ -381,12 +382,8 @@ function ListenMode({ onBack, noVoice }) {
       <TopBar title="👂 Listen & Find" onBack={onBack} score={score} streak={streak} />
       <Dots round={round} recap={recap} />
 
-      {noVoice && (
-        <div className="tl-voice-tip">🔈 No Tamil voice on this device — Listen mode needs sound. Try Learn or Mix It!</div>
-      )}
-
       <div className="tl-listen-stage">
-        <button className="tl-listen-play" onClick={() => speak(q.target)} aria-label="Play the letter again">
+        <button className="tl-listen-play" onClick={() => say(q.target)} aria-label="Play the letter again">
           🔊
         </button>
         <p className="tl-listen-hint">Which letter did you hear?</p>
@@ -452,7 +449,7 @@ function WonScreen({ color, accent, score, recap, onAgain, onModes }) {
         <div className="tl-recap">
           {recap.map((r, i) => (
             <div key={i} className={`tl-recap-item${r.ok ? '' : ' tl-recap-miss'}`}>
-              <button className="tl-recap-letter" onClick={() => speak(r.letter)}>{r.letter}</button>
+              <button className="tl-recap-letter" onClick={() => say(r.letter)}>{r.letter}</button>
               <span className="tl-recap-roman">{r.roman}</span>
             </div>
           ))}

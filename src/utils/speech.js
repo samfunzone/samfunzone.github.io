@@ -30,3 +30,24 @@ export function speak(text, rate = 0.85) {
 
 export const hasTamilVoice = () =>
   (window.speechSynthesis?.getVoices?.() || []).some(v => v.lang?.startsWith('ta'));
+
+// Play a pre-recorded clip (accurate Tamil voice bundled as a static asset).
+// Falls back to Web Speech `fallbackText` if the clip can't be played.
+const clipCache = new Map();
+let current = null;
+export function playClip(url, fallbackText = '') {
+  window.speechSynthesis?.cancel(); // stop any TTS fallback in flight
+  if (current) { try { current.pause(); current.currentTime = 0; } catch { /* ignore */ } }
+  let audio = clipCache.get(url);
+  if (!audio) {
+    audio = new Audio(url);
+    audio.preload = 'auto';
+    clipCache.set(url, audio);
+  }
+  current = audio;
+  audio.currentTime = 0;
+  const done = audio.play();
+  const fail = () => { if (fallbackText) speak(fallbackText); };
+  if (done && done.catch) done.catch(fail);
+  audio.onerror = fail; // missing/blocked file → spoken fallback
+}

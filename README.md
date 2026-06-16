@@ -23,7 +23,7 @@ A colorful, interactive React app built for kids — packed with games, creative
 | 🔍 Word Search | Find hidden words in a letter grid — 4 themes × 3 sizes (easy 8×8 across/down, medium 10×10 +diagonals, hard 12×12 all 8 directions incl. backwards). Drag to select; hints and star ratings |
 | 🔤 Unscramble | Rearrange scrambled letters into the right word — 4 categories, 8 rounds shortest→longest, two-level hints (emoji, then ghost first letter), streak scoring |
 | ✏️ Doodle Dance | Freeform doodle activity with playful animated flourishes |
-| அ Tamil Tango | Learn the Tamil alphabet — a classroom in disguise. Three modes: **Learn Grid** (tap any of the 216 உயிர்மெய் cells to hear it and see how a consonant + vowel combine, e.g. க் + ஆ = கா → "kaa"), **Mix It!** (join a consonant + vowel to build the right letter; look-alike distractors reinforce the vowel signs), and **Listen & Find** (hear a letter, tap the match). Sound via browser text-to-speech (`ta-IN`); every letter always shows its romanized spelling so it works even without a Tamil voice installed |
+| அ Tamil Tango | Learn the Tamil alphabet — a classroom in disguise. Three modes: **Learn Grid** (tap any of the 216 உயிர்மெய் cells to hear it and see how a consonant + vowel combine, e.g. க் + ஆ = கா → "kaa"), **Mix It!** (join a consonant + vowel to build the right letter; look-alike distractors reinforce the vowel signs), and **Listen & Find** (hear a letter, tap the match). Sound plays accurate native-voice audio clips bundled with the app (no dependence on the device's installed voices); every letter also shows its romanized spelling for reading support |
 
 > Whack-a-Mole, Magic Loops, and Enchanted Garden exist in `src/components/` but are currently disabled (not in the `TABS` array).
 
