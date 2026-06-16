@@ -46,8 +46,14 @@ const compose = (m, u) => m.cons + u.sign;          // க + ா = கா
 const roman = (m, u) => m.tr + u.tr;                 // k + aa = kaa
 const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
+// ⚠️ SOUND TEMPORARILY DISABLED (see README "TODO"). The bundled clips / browser TTS
+// weren't accurate enough — short vs long vowels (குறில்/நெடில்) sounded identical and
+// the ங row was wrong. Sound is gated off until we source a better Tamil voice.
+// To re-enable: flip SOUND_ENABLED to true (and restore the 🔊 buttons + Listen & Find mode).
+const SOUND_ENABLED = false;
+
 // Map every Tamil glyph the game can speak → its bundled audio clip (public/audio/tamil/).
-// Clips are accurate native-voice recordings; `say()` falls back to browser TTS if one is missing.
+// Clips fall back to browser TTS if one is missing. Kept wired up for the re-enable.
 const AUDIO_BASE = `${import.meta.env.BASE_URL}audio/tamil/`;
 const SOUND = new Map();
 UYIR.forEach((u, vi) => SOUND.set(u.base, `ta_v${vi}.mp3`));         // 12 உயிர்
@@ -56,6 +62,7 @@ MEY.forEach((m, ci) => {
   UYIR.forEach((u, vi) => SOUND.set(compose(m, u), `ta_c${ci}_v${vi}.mp3`)); // 216 உயிர்மெய்
 });
 const say = text => {
+  if (!SOUND_ENABLED) return;                                       // sound off for now
   const clip = SOUND.get(text);
   if (clip) playClip(AUDIO_BASE + clip, text);
   else speak(text);
@@ -67,15 +74,16 @@ export default function TamilLetters() {
   const back = () => setMode(null);
   if (mode === 'learn')  return <LearnMode  onBack={back} />;
   if (mode === 'mix')    return <MixMode    onBack={back} />;
-  if (mode === 'listen') return <ListenMode onBack={back} />;
+  if (mode === 'listen') return <ListenMode onBack={back} />; // unreachable while Listen & Find is disabled (sound off)
   return <StartScreen onPick={setMode} />;
 }
 
 /* ─────────────── Start screen ─────────────── */
 const MODES = [
-  { id: 'learn',  emoji: '📖', title: 'Learn Grid',     sub: 'Tap any letter to hear it & see how it’s built', color: '#8b5cf6' },
-  { id: 'mix',    emoji: '🧪', title: 'Mix It!',        sub: 'Join a consonant + vowel to make a letter',      color: '#f59e0b' },
-  { id: 'listen', emoji: '👂', title: 'Listen & Find',  sub: 'Hear a letter, then tap the right one',          color: '#10b981' },
+  { id: 'learn',  emoji: '📖', title: 'Learn Grid',     sub: 'See how a consonant + vowel build a letter', color: '#8b5cf6' },
+  { id: 'mix',    emoji: '🧪', title: 'Mix It!',        sub: 'Join a consonant + vowel to make a letter',  color: '#f59e0b' },
+  // 👂 Listen & Find is disabled while sound is off — it depends entirely on audio. See README "TODO".
+  // { id: 'listen', emoji: '👂', title: 'Listen & Find',  sub: 'Hear a letter, then tap the right one',      color: '#10b981' },
 ];
 
 function StartScreen({ onPick }) {
@@ -120,11 +128,12 @@ function LearnMode({ onBack }) {
             <span className="tl-bd-piece">{sel.u.base}</span>
             <span className="tl-bd-op">=</span>
             <span key={compose(sel.m, sel.u)} className="tl-bd-answer">{compose(sel.m, sel.u)}</span>
-            <button className="tl-bd-say" onClick={() => say(compose(sel.m, sel.u))} aria-label="Hear it">🔊</button>
+            {/* 🔊 button hidden while sound is disabled — see README "TODO".
+            <button className="tl-bd-say" onClick={() => say(compose(sel.m, sel.u))} aria-label="Hear it">🔊</button> */}
             <span className="tl-bd-roman">{roman(sel.m, sel.u)}</span>
           </>
         ) : (
-          <span className="tl-bd-hint">👆 Tap any letter in the table to hear it</span>
+          <span className="tl-bd-hint">👆 Tap any letter to see how it’s built</span>
         )}
       </div>
 
