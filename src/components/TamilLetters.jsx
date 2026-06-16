@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Fragment } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, Fragment } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { shuffle } from '../utils/shuffle';
 import { speak, playClip } from '../utils/speech';
@@ -69,19 +69,21 @@ const say = text => {
 };
 
 export default function TamilLetters() {
-  const [mode, setMode] = useState(null); // null | learn | mix | listen
+  const [mode, setMode] = useState(null); // null | learn | mix | extract | listen
 
   const back = () => setMode(null);
-  if (mode === 'learn')  return <LearnMode  onBack={back} />;
-  if (mode === 'mix')    return <MixMode    onBack={back} />;
-  if (mode === 'listen') return <ListenMode onBack={back} />; // unreachable while Listen & Find is disabled (sound off)
+  if (mode === 'learn')   return <LearnMode   onBack={back} />;
+  if (mode === 'mix')     return <MixMode     onBack={back} />;
+  if (mode === 'extract') return <ExtractMode onBack={back} />;
+  if (mode === 'listen')  return <ListenMode  onBack={back} />; // unreachable while Listen & Find is disabled (sound off)
   return <StartScreen onPick={setMode} />;
 }
 
 /* ─────────────── Start screen ─────────────── */
 const MODES = [
-  { id: 'learn',  emoji: '📖', title: 'Learn Grid',     sub: 'See how a consonant + vowel build a letter', color: '#8b5cf6' },
-  { id: 'mix',    emoji: '🧪', title: 'Mix It!',        sub: 'Join a consonant + vowel to make a letter',  color: '#f59e0b' },
+  { id: 'learn',   emoji: '📖', title: 'Learn Grid',   sub: 'See how a consonant + vowel build a letter',    color: '#8b5cf6' },
+  { id: 'mix',     emoji: '🧪', title: 'Mix It!',      sub: 'Join a consonant + vowel to make a letter',     color: '#f59e0b' },
+  { id: 'extract', emoji: '🔍', title: 'Extract It!',  sub: 'Split a letter into its vowel and consonant',   color: '#3b82f6' },
   // 👂 Listen & Find is disabled while sound is off — it depends entirely on audio. See README "TODO".
   // { id: 'listen', emoji: '👂', title: 'Listen & Find',  sub: 'Hear a letter, then tap the right one',      color: '#10b981' },
 ];
@@ -412,6 +414,271 @@ function ListenMode({ onBack }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/* ─────────────── Extract It! (split a uyirmey into its parts) ─────────────── */
+
+// Visually confusable MEY consonant index groups
+const MEY_SIM = [[0,1],[2,3],[4,5],[6,7],[8,9],[12,14,15],[16,17]];
+// Confusable UYIR vowel pairs (short / long)
+const UYIR_SIM = [[0,1],[2,3],[4,5],[6,7],[9,10]];
+
+function simOf(idx, groups) {
+  for (const g of groups) if (g.includes(idx)) return g.filter(x => x !== idx);
+  return [];
+}
+
+function pickDistractors(correctIdx, len, simGroups, diff) {
+  const pool      = Array.from({ length: len }, (_, i) => i).filter(i => i !== correctIdx);
+  const similar   = simOf(correctIdx, simGroups);
+  const dissimilar = pool.filter(i => !similar.includes(i));
+  let picked;
+  if (diff === 0) {
+    picked = shuffle(dissimilar.length >= 3 ? dissimilar : pool).slice(0, 3);
+  } else if (diff === 1) {
+    const s = shuffle(similar).slice(0, 1);
+    const d = shuffle(dissimilar).slice(0, 3 - s.length);
+    picked = shuffle([...s, ...d]);
+  } else {
+    const s = shuffle(similar).slice(0, Math.min(2, similar.length));
+    const d = shuffle(pool.filter(i => !s.includes(i))).slice(0, 3 - s.length);
+    picked = shuffle([...s, ...d]);
+  }
+  const fallback = shuffle(pool.filter(i => !picked.includes(i)));
+  while (picked.length < 3) picked.push(fallback.shift());
+  return picked;
+}
+
+const DIFF_LABEL = ['⭐ Easy', '⭐⭐ Medium', '⭐⭐⭐ Hard'];
+
+function makeExtractDeck() {
+  const deck = [];
+  const used = new Set();
+  while (deck.length < ROUNDS) {
+    const mi = Math.floor(Math.random() * MEY.length);
+    const ui = Math.floor(Math.random() * UYIR.length);
+    const key = `${mi}_${ui}`;
+    if (used.has(key)) continue;
+    used.add(key);
+    const diff = deck.length < 4 ? 0 : deck.length < 7 ? 1 : 2;
+    deck.push({
+      m: MEY[mi], u: UYIR[ui], mi, ui, diff,
+      uyirOpts: shuffle([ui, ...pickDistractors(ui, UYIR.length, UYIR_SIM, diff)]),
+      meyOpts:  shuffle([mi, ...pickDistractors(mi, MEY.length,  MEY_SIM,  diff)]),
+    });
+  }
+  return deck;
+}
+
+function ExtractMode({ onBack }) {
+  const [deck, setDeck]           = useState(makeExtractDeck);
+  const [round, setRound]         = useState(0);
+  const [score, setScore]         = useState(0);
+  const [streak, setStreak]       = useState(0);
+  const [wrongs, setWrongs]       = useState(0);
+  const [selU, setSelU]           = useState(null);
+  const [selM, setSelM]           = useState(null);
+  const [status, setStatus]       = useState('asking'); // asking | right | wrong
+  const [wrongSide, setWrongSide] = useState(null);     // null | 'u' | 'm' | 'both'
+  const [recap, setRecap]         = useState([]);
+  const [gain, setGain]           = useState(null);
+  const [done, setDone]           = useState(false);
+  const [arrows, setArrows]       = useState({ u: null, m: null });
+
+  const arenaRef  = useRef(null);
+  const centerRef = useRef(null);
+  const uRefs     = useRef([]);
+  const mRefs     = useRef([]);
+  const timeouts  = useRef([]);
+
+  useEffect(() => {
+    const pending = timeouts.current;
+    return () => pending.forEach(clearTimeout);
+  }, []);
+  const later = (fn, ms) => { const id = setTimeout(fn, ms); timeouts.current.push(id); };
+
+  const q = deck[round];
+
+  // Measure tile positions after selection changes to draw arrows.
+  useLayoutEffect(() => {
+    const arena  = arenaRef.current;
+    const center = centerRef.current;
+    if (!arena || !center) { setArrows({ u: null, m: null }); return; }
+    const ar = arena.getBoundingClientRect();
+    const cr = center.getBoundingClientRect();
+    const cx  = cr.left - ar.left + cr.width / 2;
+    const cyt = cr.top  - ar.top  + cr.height / 2;
+    let uArr = null, mArr = null;
+    if (selU !== null && uRefs.current[selU]) {
+      const r = uRefs.current[selU].getBoundingClientRect();
+      uArr = { x1: cx - cr.width / 2 - 2, y1: cyt, x2: r.right - ar.left + 2, y2: r.top - ar.top + r.height / 2 };
+    }
+    if (selM !== null && mRefs.current[selM]) {
+      const r = mRefs.current[selM].getBoundingClientRect();
+      mArr = { x1: cx + cr.width / 2 + 2, y1: cyt, x2: r.left - ar.left - 2,  y2: r.top - ar.top + r.height / 2 };
+    }
+    setArrows({ u: uArr, m: mArr });
+  }, [selU, selM, round]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function tapU(idx) {
+    if (status !== 'asking') return;
+    setSelU(idx);
+    if (selM !== null) doCheck(idx, selM);
+  }
+
+  function tapM(idx) {
+    if (status !== 'asking') return;
+    setSelM(idx);
+    if (selU !== null) doCheck(selU, idx);
+  }
+
+  function doCheck(uIdx, mIdx) {
+    const uc = q.uyirOpts[uIdx] === q.ui;
+    const mc = q.meyOpts[mIdx]  === q.mi;
+    if (uc && mc) {
+      setStatus('right');
+      const pts = Math.max(100 - wrongs * 25, 25) + streak * 10;
+      setScore(s => s + pts);
+      setStreak(k => k + 1);
+      setGain({ pts, key: round });
+      setRecap(r => [...r, { letter: compose(q.m, q.u), roman: roman(q.m, q.u), ok: wrongs === 0 }]);
+      launchConfetti(window.innerWidth / 2, window.innerHeight * 0.4, 26);
+      later(advance, 1400);
+    } else {
+      const side = !uc && !mc ? 'both' : !uc ? 'u' : 'm';
+      setWrongSide(side);
+      setStatus('wrong');
+      setStreak(0);
+      setWrongs(w => w + 1);
+      later(() => {
+        setWrongSide(null);
+        setStatus('asking');
+        if (side !== 'm') setSelU(null);
+        if (side !== 'u') setSelM(null);
+      }, 700);
+    }
+  }
+
+  function advance() {
+    if (round + 1 >= ROUNDS) { setDone(true); return; }
+    setRound(r => r + 1);
+    setWrongs(0); setSelU(null); setSelM(null);
+    setStatus('asking'); setWrongSide(null);
+  }
+
+  function restart() {
+    setDeck(makeExtractDeck());
+    setRound(0); setScore(0); setStreak(0); setWrongs(0);
+    setSelU(null); setSelM(null); setStatus('asking'); setWrongSide(null);
+    setRecap([]); setGain(null); setDone(false);
+  }
+
+  if (done) {
+    return <WonScreen color="blue" accent="#3b82f6" score={score} recap={recap} onAgain={restart} onModes={onBack} />;
+  }
+
+  function tileState(idx, isU) {
+    const sel  = isU ? selU : selM;
+    const side = isU ? 'u' : 'm';
+    if (sel !== idx) return '';
+    if (status === 'right') return ' tl-extract-tile-right';
+    if (status === 'wrong' && (wrongSide === side || wrongSide === 'both')) return ' tl-extract-tile-wrong';
+    return ' tl-extract-tile-sel';
+  }
+
+  function arrowEl(a, isU) {
+    if (!a) return null;
+    const side  = isU ? 'u' : 'm';
+    const st    = status === 'right' ? 'r' : (status === 'wrong' && (wrongSide === side || wrongSide === 'both')) ? 'w' : 'n';
+    const color = st === 'r' ? '#51cf66' : st === 'w' ? '#ff6b6b' : '#3b82f6';
+    return (
+      <line key={isU ? 'u' : 'm'}
+        x1={a.x1} y1={a.y1} x2={a.x2} y2={a.y2}
+        stroke={color} strokeWidth={2.5} strokeOpacity=".85"
+        markerEnd={`url(#tl-arr-${st})`}
+        className="tl-extract-arrow"
+      />
+    );
+  }
+
+  const hint =
+    status === 'wrong'                    ? 'Not quite — try again!'
+    : selU === null && selM === null      ? 'Tap a vowel on the left and a consonant on the right'
+    : selU !== null && selM === null      ? 'Now tap the consonant on the right →'
+    : selU === null && selM !== null      ? '← Now tap the vowel on the left'
+    : '';
+
+  return (
+    <div className="card card-blue tl-card" style={{ '--tl-accent': '#3b82f6' }}>
+      <TopBar title="🔍 Extract It!" onBack={onBack} score={score} streak={streak} />
+      <Dots round={round} recap={recap} />
+
+      <div className="tl-extract-arena" ref={arenaRef}>
+        {/* Left column: uyir (vowel) options */}
+        <div className="tl-extract-col">
+          <div className="tl-extract-col-hd">உயிர் <span>vowel</span></div>
+          {q.uyirOpts.map((ui, idx) => (
+            <button
+              key={UYIR[ui].base}
+              ref={el => { uRefs.current[idx] = el; }}
+              className={`tl-extract-tile${tileState(idx, true)}`}
+              disabled={status === 'right'}
+              onClick={() => tapU(idx)}
+            >
+              <span>{UYIR[ui].base}</span>
+              <small>{UYIR[ui].tr}</small>
+            </button>
+          ))}
+        </div>
+
+        {/* Center: target uyirmey letter */}
+        <div className="tl-extract-mid">
+          <div className="tl-extract-diff">{DIFF_LABEL[q.diff]}</div>
+          <div ref={centerRef} className={`tl-extract-target${status === 'right' ? ' tl-merge' : ''}`}>
+            {compose(q.m, q.u)}
+          </div>
+          {gain && gain.key === round && <span key={gain.key} className="tl-gain">+{gain.pts}</span>}
+          <div className="tl-extract-bkdn">
+            {status === 'right'
+              ? <>{q.m.pulli} + {q.u.base} <span className="tl-extract-bkdn-eq">=</span> {compose(q.m, q.u)}</>
+              : <span className="tl-extract-bkdn-hint">? + ? = {compose(q.m, q.u)}</span>}
+          </div>
+        </div>
+
+        {/* Right column: mey (consonant) options */}
+        <div className="tl-extract-col">
+          <div className="tl-extract-col-hd">மெய் <span>consonant</span></div>
+          {q.meyOpts.map((mi, idx) => (
+            <button
+              key={MEY[mi].pulli}
+              ref={el => { mRefs.current[idx] = el; }}
+              className={`tl-extract-tile${tileState(idx, false)}`}
+              disabled={status === 'right'}
+              onClick={() => tapM(idx)}
+            >
+              <span>{MEY[mi].pulli}</span>
+              <small>{MEY[mi].tr}</small>
+            </button>
+          ))}
+        </div>
+
+        {/* SVG arrow overlay */}
+        <svg className="tl-extract-svg" aria-hidden="true">
+          <defs>
+            {[['n','#3b82f6'],['r','#51cf66'],['w','#ff6b6b']].map(([st, fill]) => (
+              <marker key={st} id={`tl-arr-${st}`} markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+                <path d="M0,0 L7,3.5 L0,7 Z" fill={fill} opacity={st === 'n' ? '.85' : '1'} />
+              </marker>
+            ))}
+          </defs>
+          {arrowEl(arrows.u, true)}
+          {arrowEl(arrows.m, false)}
+        </svg>
+      </div>
+
+      <div className={`tl-extract-hint${status === 'wrong' ? ' tl-extract-hint-err' : ''}`}>{hint}</div>
     </div>
   );
 }
