@@ -1,17 +1,55 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { launchConfetti } from '../utils/confetti';
 
-const COLORS = ['#2b2b2b', '#ff6b6b', '#ff922b', '#ffd93d', '#51cf66', '#4d96ff', '#cc5de8', '#ff8fab'];
+const COLORS = ['#2b2b2b', '#8B4513', '#ff6b6b', '#ff922b', '#ffd93d', '#51cf66', '#4d96ff', '#cc5de8', '#ff8fab'];
 const SIZES = [
   { id: 'thin', label: 'Thin', width: 3 },
   { id: 'medium', label: 'Medium', width: 6 },
   { id: 'thick', label: 'Thick', width: 12 },
+];
+const TOOLS = [
+  { id: 'draw', label: '✏️ Draw' },
+  { id: 'erase', label: '🧹 Erase' },
+  { id: 'fill', label: '🪣 Fill' },
 ];
 const DANCE_STYLES = [
   { id: 'wiggle', label: '🕺 Wiggle' },
   { id: 'bounce', label: '🎉 Bounce' },
   { id: 'spin', label: '🌪️ Spin' },
 ];
+
+function hexToRgb(hex) {
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16), 255];
+}
+
+function floodFill(imageData, startX, startY, fillRgb) {
+  const data = new Uint8ClampedArray(imageData.data);
+  const { width, height } = imageData;
+  const si = (startY * width + startX) * 4;
+  const [tr, tg, tb, ta] = [data[si], data[si+1], data[si+2], data[si+3]];
+  const [fr, fg, fb] = fillRgb;
+  const tol = 30;
+  const match = i =>
+    Math.abs(data[i]-tr) <= tol && Math.abs(data[i+1]-tg) <= tol &&
+    Math.abs(data[i+2]-tb) <= tol && Math.abs(data[i+3]-ta) <= tol;
+  if (match(si) && data[si]===fr && data[si+1]===fg && data[si+2]===fb) return imageData;
+  const visited = new Uint8Array(width * height);
+  const stack = [startX + startY * width];
+  while (stack.length) {
+    const pos = stack.pop();
+    if (visited[pos]) continue;
+    visited[pos] = 1;
+    const i = pos * 4;
+    if (!match(i)) continue;
+    data[i] = fr; data[i+1] = fg; data[i+2] = fb; data[i+3] = 255;
+    const x = pos % width, y = (pos / width) | 0;
+    if (x > 0) stack.push(pos - 1);
+    if (x < width - 1) stack.push(pos + 1);
+    if (y > 0) stack.push(pos - width);
+    if (y < height - 1) stack.push(pos + width);
+  }
+  return new ImageData(data, width, height);
+}
 
 function circlePoints(cx, cy, r, n = 24) {
   const pts = [];
@@ -56,9 +94,17 @@ export default function DoodleDance() {
 
   const [color, setColor] = useState(COLORS[0]);
   const [brush, setBrush] = useState(SIZES[1]);
+  const [tool, setTool] = useState('draw');
   const [strokeCount, setStrokeCount] = useState(0);
   const [phase, setPhase] = useState('draw');
   const [danceStyle, setDanceStyle] = useState('wiggle');
+
+  const colorRef = useRef(color);
+  const brushRef = useRef(brush);
+  const toolRef = useRef('draw');
+  useEffect(() => { colorRef.current = color; }, [color]);
+  useEffect(() => { brushRef.current = brush; }, [brush]);
+  useEffect(() => { toolRef.current = tool; }, [tool]);
 
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { danceStyleRef.current = danceStyle; }, [danceStyle]);
@@ -80,13 +126,14 @@ export default function DoodleDance() {
     ro.observe(canvas);
 
     function drawStroke(stroke, t, idx, dancing) {
-      const { points, color: c, width: w } = stroke;
+      const { points, color: c, width: w, erase } = stroke;
       if (points.length < 2) return;
       const motion = reducedMotionRef.current ? 0.15 : 1;
       const style = danceStyleRef.current;
       const amp = (style === 'bounce' ? 3 : 6) * motion;
       const speed = style === 'wiggle' ? 7 : 4;
 
+      if (erase) ctx.globalCompositeOperation = 'destination-out';
       ctx.beginPath();
       points.forEach((p, i) => {
         let x = p.x;
@@ -98,11 +145,12 @@ export default function DoodleDance() {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       });
-      ctx.strokeStyle = c;
+      ctx.strokeStyle = erase ? 'rgba(0,0,0,1)' : c;
       ctx.lineWidth = w;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
+      if (erase) ctx.globalCompositeOperation = 'source-over';
     }
 
     function drawFrame() {
@@ -132,7 +180,10 @@ export default function DoodleDance() {
         ctx.translate(-cx, -cy);
       }
 
-      strokesRef.current.forEach((s, i) => drawStroke(s, t, i, dancing));
+      strokesRef.current.forEach((s, i) => {
+        if (s.type === 'fill') ctx.drawImage(s.offscreen, 0, 0);
+        else drawStroke(s, t, i, dancing);
+      });
       if (currentRef.current) drawStroke(currentRef.current, t, -1, false);
 
       ctx.restore();
@@ -151,11 +202,34 @@ export default function DoodleDance() {
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   }, []);
 
+  function handleFill(e) {
+    const canvas = canvasRef.current;
+    const pos = getPos(e);
+    const ctx = canvas.getContext('2d');
+    const x = Math.max(0, Math.min(Math.floor(pos.x), canvas.width - 1));
+    const y = Math.max(0, Math.min(Math.floor(pos.y), canvas.height - 1));
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const filled = floodFill(imageData, x, y, hexToRgb(colorRef.current));
+    const offscreen = document.createElement('canvas');
+    offscreen.width = canvas.width;
+    offscreen.height = canvas.height;
+    offscreen.getContext('2d').putImageData(filled, 0, 0);
+    strokesRef.current.push({ type: 'fill', offscreen });
+    setStrokeCount(c => c + 1);
+  }
+
   function handlePointerDown(e) {
     if (phaseRef.current !== 'draw') return;
     e.preventDefault();
+    if (toolRef.current === 'fill') { handleFill(e); return; }
     drawingRef.current = true;
-    currentRef.current = { points: [getPos(e)], color, width: brush.width };
+    const isErase = toolRef.current === 'erase';
+    currentRef.current = {
+      points: [getPos(e)],
+      color: colorRef.current,
+      width: isErase ? brushRef.current.width * 3 : brushRef.current.width,
+      erase: isErase,
+    };
   }
 
   function handlePointerMove(e) {
@@ -201,6 +275,7 @@ export default function DoodleDance() {
     strokesRef.current = [];
     setStrokeCount(0);
     setPhase('draw');
+    setTool('draw');
   }
 
   return (
@@ -214,6 +289,17 @@ export default function DoodleDance() {
 
       {phase === 'draw' && (
         <div className="doodle-toolbar">
+          <div className="doodle-tool-row">
+            {TOOLS.map(t => (
+              <button
+                key={t.id}
+                className={`doodle-tool-btn${tool === t.id ? ' active' : ''}`}
+                onClick={() => setTool(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
           <div className="doodle-swatch-row">
             {COLORS.map(c => (
               <button
@@ -225,24 +311,26 @@ export default function DoodleDance() {
               />
             ))}
           </div>
-          <div className="doodle-size-row">
-            {SIZES.map(s => (
-              <button
-                key={s.id}
-                className={`doodle-size-btn${brush.id === s.id ? ' active' : ''}`}
-                onClick={() => setBrush(s)}
-              >
-                <span className="doodle-size-dot" style={{ width: s.width, height: s.width }} />
-                {s.label}
-              </button>
-            ))}
-          </div>
+          {tool !== 'fill' && (
+            <div className="doodle-size-row">
+              {SIZES.map(s => (
+                <button
+                  key={s.id}
+                  className={`doodle-size-btn${brush.id === s.id ? ' active' : ''}`}
+                  onClick={() => setBrush(s)}
+                >
+                  <span className="doodle-size-dot" style={{ width: s.width, height: s.width }} />
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       <canvas
         ref={canvasRef}
-        className={`doodle-canvas${phase === 'dance' ? ' doodle-canvas-dance' : ''}`}
+        className={`doodle-canvas${phase === 'dance' ? ' doodle-canvas-dance' : ` doodle-canvas-${tool}`}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

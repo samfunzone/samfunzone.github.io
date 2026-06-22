@@ -2862,6 +2862,15 @@
 .doodle-swatch:hover  { transform: scale(1.15); }
 .doodle-swatch.active { border-color: #ff6b6b; transform: scale(1.18); }
 
+.doodle-tool-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.doodle-tool-btn {
+  padding: 6px 16px; border-radius: 50px; border: 2px solid #ffc9c9;
+  background: #fff; font-family: inherit; font-weight: 700; color: #555;
+  cursor: pointer; transition: transform .15s, background .15s;
+}
+.doodle-tool-btn:hover  { background: #fff5f5; transform: translateY(-2px); }
+.doodle-tool-btn.active { background: #ff6b6b; color: #fff; border-color: #ff6b6b; }
+
 .doodle-size-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .doodle-size-btn {
   display: flex; align-items: center; gap: 6px;
@@ -2880,6 +2889,8 @@
   margin-bottom: 12px;
 }
 .doodle-canvas-dance { cursor: default; border-style: solid; }
+.doodle-canvas-erase { cursor: cell; }
+.doodle-canvas-fill  { cursor: copy; }
 
 .doodle-style-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
 .doodle-style-btn {
