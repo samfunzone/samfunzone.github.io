@@ -1101,6 +1101,133 @@ function FriesSVG({ added, done }) {
   );
 }
 
+function CookieSVG({ added, done }) {
+  const h = id => added.has(id);
+
+  // Deterministic topping positions — never Math.random() in render
+  const chips     = [[72,74],[120,70],[86,102],[130,106],[64,116],[104,134],[142,92],[78,140],[110,94]];
+  const mms       = [[92,80,'#e53935'],[122,126,'#43a047'],[70,96,'#fdd835'],[136,72,'#1e88e5'],[100,118,'#fb8c00'],[150,112,'#8e24aa']];
+  const sprinkles = [[66,68],[140,78],[78,120],[126,134],[100,62],[150,100],[60,100],[114,150],[90,142],[134,104]];
+  const sprColors = ['#ff6b6b','#4fc3f7','#ffee58','#81c784','#ce93d8','#ff9800','#f06292','#26c6da'];
+  const nuts      = [[84,88,-20],[126,96,15],[96,124,-8],[70,128,30],[138,124,-25],[110,76,10]];
+
+  return (
+    <svg viewBox="0 0 200 200" width={210} height={210} style={{ maxWidth: '100%', height: 'auto' }}>
+      <defs>
+        <Shadow />
+        <SheenGrad />
+        <clipPath id="food-cookie-clip"><circle cx="100" cy="100" r="82" /></clipPath>
+        <radialGradient id="food-cookie-base" cx="42%" cy="38%" r="70%">
+          <stop offset="0%"   stopColor={lighten('#e0a854', .22)} />
+          <stop offset="60%"  stopColor="#e0a854" />
+          <stop offset="100%" stopColor={darken('#e0a854', .16)} />
+        </radialGradient>
+        <radialGradient id="food-cookie-edge" cx="50%" cy="45%" r="58%">
+          <stop offset="0%"   stopColor="#c87f3a" />
+          <stop offset="78%"  stopColor="#c87f3a" />
+          <stop offset="100%" stopColor={darken('#c87f3a', .24)} />
+        </radialGradient>
+        <Glossy id="food-chip" c="#4a2c1a" hi={0.45} lo={0.3} />
+      </defs>
+
+      <ellipse cx="100" cy="190" rx="84" ry="9" fill="url(#food-shadow)" />
+
+      {/* Cookie base */}
+      {h('dough') && <g className="food-ing">
+        {/* homemade wavy baked edge */}
+        {[...Array(16)].map((_, i) => {
+          const a = i / 16 * Math.PI * 2;
+          const bx = 100 + 78 * Math.cos(a), by = 100 + 78 * Math.sin(a);
+          return <circle key={i} cx={bx} cy={by} r={i % 2 ? 9 : 7} fill="url(#food-cookie-edge)" />;
+        })}
+        <circle cx="100" cy="100" r="80" fill="url(#food-cookie-edge)" />
+        <circle cx="100" cy="100" r="74" fill="url(#food-cookie-base)" />
+        {/* baked surface mottling */}
+        {[[78,72,'l'],[120,84,'d'],[92,116,'l'],[128,114,'d'],[70,104,'d'],[112,132,'l']].map(([mx,my,t],i) => (
+          <ellipse key={i} cx={mx} cy={my} rx={14+i%2*5} ry={10+i%2*3}
+            fill={t === 'l' ? lighten('#e0a854', .14) : darken('#e0a854', .1)} opacity=".55"
+            transform={`rotate(${i*36} ${mx} ${my})`} />
+        ))}
+        {/* toasted speckles */}
+        {[[64,90],[132,98],[88,64],[116,136],[74,128],[140,118],[98,98],[108,70],[80,108]].map(([sx,sy],i) => (
+          <circle key={i} cx={sx} cy={sy} r={i%3 ? 1.6 : 2.4} fill={darken('#c87f3a', .15)} opacity=".5" />
+        ))}
+        {/* a couple of baked cracks */}
+        <path d="M58,96 q20,-10 38,2 q18,10 40,-4" fill="none" stroke={darken('#c87f3a', .2)}
+          strokeWidth="2" opacity=".4" strokeLinecap="round" />
+        <path d="M74,126 q16,8 34,0" fill="none" stroke={darken('#c87f3a', .2)}
+          strokeWidth="1.6" opacity=".35" strokeLinecap="round" />
+        {/* sheen highlight */}
+        <path d="M48,76 A66,66 0 0 1 108,38" stroke="rgba(255,255,255,.4)" strokeWidth="6"
+          fill="none" strokeLinecap="round" />
+      </g>}
+
+      {/* Chocolate chips */}
+      {h('chips') && h('dough') && chips.map(([cx,cy],i) => (
+        <g key={i} className="food-ing" style={{ animationDelay: `${i * 50}ms` }}>
+          <g transform={`rotate(${(i*47)%50-25} ${cx} ${cy})`}>
+            <path d={`M${cx-8},${cy+5} Q${cx-9},${cy-6} ${cx},${cy-7} Q${cx+9},${cy-6} ${cx+8},${cy+5} Q${cx},${cy+8} ${cx-8},${cy+5} Z`}
+              fill="url(#food-chip)" />
+            <ellipse cx={cx-2.5} cy={cy-3} rx="3" ry="2" fill="rgba(255,255,255,.45)"
+              transform={`rotate(-20 ${cx-2.5} ${cy-3})`} />
+          </g>
+        </g>
+      ))}
+
+      {/* Candy buttons (M&M style) */}
+      {h('candy') && h('dough') && mms.map(([cx,cy,c],i) => (
+        <g key={i} className="food-ing" style={{ animationDelay: `${i * 50}ms` }}>
+          <ellipse cx={cx} cy={cy} rx="9" ry="7.5" fill={c} />
+          <path d={`M${cx-8},${cy+1} a9,7.5 0 0 0 16,0 a9,7.5 0 0 1 -16,0 Z`} fill={darken(c, .2)} opacity=".6" />
+          <ellipse cx={cx-2.5} cy={cy-3} rx="3.5" ry="2" fill="rgba(255,255,255,.65)" />
+        </g>
+      ))}
+
+      {/* Chopped nuts */}
+      {h('nuts') && h('dough') && nuts.map(([cx,cy,rot],i) => (
+        <g key={i} className="food-ing" style={{ animationDelay: `${i * 50}ms` }}>
+          <g transform={`rotate(${rot} ${cx} ${cy})`}>
+            <path d={`M${cx-6},${cy} Q${cx},${cy-6} ${cx+6},${cy} Q${cx},${cy+6} ${cx-6},${cy} Z`}
+              fill="#e8c98f" stroke={darken('#e8c98f', .2)} strokeWidth=".8" />
+            <line x1={cx-3} y1={cy} x2={cx+3} y2={cy} stroke={darken('#e8c98f', .25)} strokeWidth=".8" opacity=".6" />
+          </g>
+        </g>
+      ))}
+
+      {/* Rainbow sprinkles */}
+      {h('sprinkles') && h('dough') && sprinkles.map(([sx,sy],i) => (
+        <g key={i} className="food-ing" style={{ animationDelay: `${i * 40}ms` }}>
+          <rect x={sx-5} y={sy-1.5} width="11" height="4" rx="2"
+            fill={sprColors[i % sprColors.length]}
+            transform={`rotate(${i*40} ${sx} ${sy})`} />
+        </g>
+      ))}
+
+      {/* White icing drizzle */}
+      {h('icing') && h('dough') && <g className="food-ing">
+        <path d="M52,84 q14,-12 26,2 q14,14 26,2 q14,-12 26,2 q11,9 20,1"
+          stroke="#fff" strokeWidth="5" fill="none" strokeLinecap="round" opacity=".92" />
+        <path d="M58,124 q14,12 26,0 q14,-12 26,0 q14,12 24,0"
+          stroke="#f6f1e8" strokeWidth="4.5" fill="none" strokeLinecap="round" opacity=".88" />
+        <path className="food-drip" style={{ animationDelay: '.4s' }}
+          d="M150,90 q2,9 -1,14" stroke="#fff" strokeWidth="4" fill="none" strokeLinecap="round" />
+      </g>}
+
+      {/* glossy sheen sweeping over the finished cookie */}
+      {done && h('dough') && (
+        <g clipPath="url(#food-cookie-clip)">
+          <g transform="rotate(-18 100 100)">
+            <rect className="food-sheen" x="-70" y="-30" width="60" height="260" fill="url(#food-sheen-grad)" />
+          </g>
+        </g>
+      )}
+
+      {done && <Steam xs={[74,100,126]} y={56} />}
+      {done && <Sparkles pts={[[16,46],[184,66],[22,150],[182,158]]} />}
+    </svg>
+  );
+}
+
 /* ─────────────────────────────
    Food Definitions
 ───────────────────────────── */
@@ -1210,6 +1337,20 @@ const FOODS = [
       { id:'jalapeno',  label:'🫑 Jalapeños',       req:false },
     ],
     Viz: TacoSVG,
+  },
+  {
+    id: 'cookie', name: 'Cookie', emoji: '🍪', cookWord: 'Bake', cookEmoji: '🔥',
+    required: ['dough','chips'],
+    optional: ['candy','nuts','sprinkles','icing'],
+    ingredients: [
+      { id:'dough',     label:'🍪 Cookie Dough',     req:true  },
+      { id:'chips',     label:'🍫 Chocolate Chips',  req:true  },
+      { id:'candy',     label:'🔴 Candy Buttons',    req:false },
+      { id:'nuts',      label:'🥜 Chopped Nuts',     req:false },
+      { id:'sprinkles', label:'🌈 Sprinkles',         req:false },
+      { id:'icing',     label:'🤍 Icing Drizzle',    req:false },
+    ],
+    Viz: CookieSVG,
   },
 ];
 
