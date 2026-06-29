@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { lighten, darken } from '../utils/color';
+import { track } from '../utils/analytics';
 
 /* ─────────────────────────────
    Shared gradient / decoration helpers
@@ -1379,6 +1380,7 @@ export default function MakingYummyFood() {
       setCooking(false);
       setDone(true);
       launchConfetti(window.innerWidth / 2, 200, 70);
+      track('game_complete', { game: 'food', dish: food.id });
     }, 2000);
   };
 

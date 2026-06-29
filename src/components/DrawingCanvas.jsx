@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { lighten, darken } from '../utils/color';
+import { track } from '../utils/analytics';
 
 // 12 vibrant colours, all visible on white (white is gone — the Eraser replaces it)
 const COLORS = [
@@ -189,6 +190,7 @@ export default function DrawingCanvas() {
     a.download = 'my-drawing.png';
     a.click();
     launchConfetti(window.innerWidth / 2, 200, 30);
+    track('game_complete', { game: 'draw' });
   };
 
   const pickColor = (c) => { setColor(c); if (tool === 'erase') setTool('brush'); };

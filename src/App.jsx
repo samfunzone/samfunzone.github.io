@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
+import { trackGameView } from './utils/analytics';
 import MemoryMatch   from './components/MemoryMatch';
 import JokeMachine   from './components/JokeMachine';
 import DrawingCanvas  from './components/DrawingCanvas';
@@ -40,6 +41,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('memory');
 
   const current = TABS.find(t => t.id === activeTab);
+
+  // Send a per-game virtual pageview so Umami can report time spent on
+  // each game (plus device/region, filterable per game). Fires on the
+  // initial game and on every switch.
+  useEffect(() => {
+    trackGameView(activeTab, current?.label);
+  }, [activeTab, current?.label]);
 
   return (
     <div className="app">

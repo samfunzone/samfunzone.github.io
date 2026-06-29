@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { lighten, darken } from '../utils/color';
+import { track } from '../utils/analytics';
 
 const COLORS = [
   { id: 'pink',   c: '#ff6fa5' },
@@ -159,6 +160,7 @@ export default function BubblePop() {
     st.newBest = score > 0 && score > best;
     setBest(b => Math.max(b, score));
     setPhase('done');
+    track('game_complete', { game: 'bubbles' });
     setBubbles([]);
     setCombo(0);
     launchConfetti(window.innerWidth / 2, 180, st.newBest ? 80 : 40);

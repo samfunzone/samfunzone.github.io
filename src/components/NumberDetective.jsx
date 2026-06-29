@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { launchConfetti } from '../utils/confetti';
+import { track } from '../utils/analytics';
 
 const LEVELS = [
   { max: 100,    label: '1 – 100',     rank: 'Rookie',    emoji: '🔎', color: 'green',  optimal: 7  },
@@ -74,6 +75,7 @@ export default function NumberDetective() {
       setHistory(h => [...h, { value: g, hint: 'correct', prox }]);
       setShowHints(true);
       setPhase('won');
+      track('game_complete', { game: 'numdet' });
       for (let i = 0; i < 8; i++)
         setTimeout(() => launchConfetti(
           window.innerWidth * (0.15 + Math.random() * 0.7),

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { lighten, darken } from '../utils/color';
 import { shuffle } from '../utils/shuffle';
+import { track } from '../utils/analytics';
 
 const THEMES = [
   { id: 'animals', label: 'Animals', emoji: '🦁', color: '#f59e0b',
@@ -191,6 +192,7 @@ export default function WordSearch() {
       setHintCell(null);
       launchConfetti(e.clientX, e.clientY, 24);
       if (nf.length === puzzle.placements.length) {
+        track('game_complete', { game: 'wordsearch' });
         later(() => {
           setPhase('won');
           for (let i = 0; i < 6; i++)

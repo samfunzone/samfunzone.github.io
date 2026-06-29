@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { shuffle } from '../utils/shuffle';
+import { track } from '../utils/analytics';
 
 const CATEGORIES = [
   { id: 'animals', label: 'Animals', emoji: '🦁', color: '#f59e0b', words: [
@@ -108,6 +109,7 @@ export default function Unscramble() {
     setRecap(rs => [...rs, { w: deck[round].w, e: deck[round].e, ...result }]);
     if (round + 1 >= deck.length) {
       setPhase('won');
+      track('game_complete', { game: 'unscramble' });
       for (let i = 0; i < 6; i++)
         later(() => launchConfetti(
           window.innerWidth * (0.2 + Math.random() * 0.6),

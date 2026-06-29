@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { launchConfetti } from '../utils/confetti';
+import { track } from '../utils/analytics';
 
 const ALL_EMOJIS = ['🐶','🐱','🐸','🦊','🐨','🐧','🦁','🐝','🦋','🐠','🦄','🐻'];
 
@@ -84,6 +85,7 @@ export default function MemoryMatch() {
 
         if (newMatched.size === size) {
           // Final solve — celebrate all cards then confetti
+          track('game_complete', { game: 'memory' });
           celebrate(cards.map((_, i) => i));
           setTimeout(() => {
             setFlipped([]);

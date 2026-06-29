@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { launchConfetti } from '../utils/confetti';
+import { track } from '../utils/analytics';
 
 // Normalise a guess for comparison
 const norm = s => s.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
@@ -872,6 +873,7 @@ export default function FamilyFeud() {
     const next = roundIndex + 1;
     if (next >= TOTAL_ROUNDS) {
       setPhase('game-end');
+      track('game_complete', { game: 'feud' });
     } else {
       setRoundIndex(next);
       setRevealed([]);

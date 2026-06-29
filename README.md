@@ -52,6 +52,42 @@ App runs at **http://localhost:3000**.
 - Three.js (3D Squishy Stuff)
 - Plain CSS (no UI library) — mobile-responsive
 
+## Analytics
+
+Usage is tracked with [Umami](https://umami.is) (cloud-hosted, cookieless — no
+consent banner needed). The script tag lives in `index.html`; the helpers are in
+`src/utils/analytics.js`.
+
+- **Time per game** — this is a single-page app, so each game switch sends a
+  *virtual pageview* (`/game/<id>`) via `trackGameView()`, fired from a
+  `useEffect` on the active tab in `src/App.jsx`. Umami derives time-on-page from
+  the gap between pageviews, so each game gets its own duration. See it in the
+  Umami **Pages** report (each game appears as `/game/<id>`).
+- **Mobile vs desktop** — Umami's **Devices** report (automatic, no code).
+- **Region/location** — Umami's **Country / Region / City** report, IP-based and
+  high-level only — no GPS (automatic, no code).
+- **Completion / drop-off** — games with a real "finish" fire a
+  `game_complete` event (`track('game_complete', { game })`) at the win/done
+  moment: Memory Match, Number Detective (real solve only, not "give up"),
+  Bubble Pop (timer ran out), Word Search, Unscramble, Family Feud, Tamil Tango
+  (with `mode`), Drawing (Save), Making Boba (finished cup), Yummy Food (served,
+  with `dish`). Per game, drop-off ≈ `1 − (game_complete ÷ /game/<id> opens)` —
+  many opens but few completes means kids start it and lose interest. Umami's
+  **Funnels** can chart open → complete directly. Open-ended toys (Dressing
+  Dolls, My Room, Squishy, Joke, Riddle, Doodle) have no completion event — for
+  those, time-on-page is the engagement signal.
+
+Notes:
+- All tracking calls no-op safely (`try/catch` + optional chaining) if the script
+  is blocked or offline — analytics never breaks the app.
+- Visitors running ad-blockers or strict privacy browsers (Brave, Firefox/Safari
+  tracking protection) block the Umami script, so expect some undercount. Treat
+  numbers as a lower bound.
+- The last game viewed before leaving the site records ~0s (no following
+  pageview to measure against); averages across many sessions stay meaningful.
+- A generic `track(event, props)` helper is also exported for richer custom
+  events later (e.g. `track('game_won', { game: 'numdet', stars: 3 })`).
+
 ## Deployment
 
 Deployed to GitHub Pages via GitHub Actions on every push to `main`.

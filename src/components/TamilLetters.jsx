@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect, Fragment } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { shuffle } from '../utils/shuffle';
 import { speak, playClip } from '../utils/speech';
+import { track } from '../utils/analytics';
 
 // 12 உயிர் (vowels): standalone letter + combining sign + roman vowel sound.
 const UYIR = [
@@ -263,7 +264,7 @@ function MixMode({ onBack }) {
   }
 
   if (done) {
-    return <WonScreen color="orange" accent="#f59e0b" score={score} recap={recap} onAgain={restart} onModes={onBack} />;
+    return <WonScreen mode="mix" color="orange" accent="#f59e0b" score={score} recap={recap} onAgain={restart} onModes={onBack} />;
   }
 
   const correct = compose(q.m, q.u);
@@ -395,7 +396,7 @@ function ListenMode({ onBack }) {
   }
 
   if (done) {
-    return <WonScreen color="green" accent="#10b981" score={score} recap={recap} onAgain={restart} onModes={onBack} />;
+    return <WonScreen mode="listen" color="green" accent="#10b981" score={score} recap={recap} onAgain={restart} onModes={onBack} />;
   }
 
   return (
@@ -587,7 +588,7 @@ function ExtractMode({ onBack }) {
   }
 
   if (done) {
-    return <WonScreen color="blue" accent="#3b82f6" score={score} recap={recap} onAgain={restart} onModes={onBack} />;
+    return <WonScreen mode="extract" color="blue" accent="#3b82f6" score={score} recap={recap} onAgain={restart} onModes={onBack} />;
   }
 
   function tileState(idx, isU) {
@@ -731,9 +732,11 @@ function Dots({ round, recap }) {
   );
 }
 
-function WonScreen({ color, accent, score, recap, onAgain, onModes }) {
+function WonScreen({ color, accent, score, recap, onAgain, onModes, mode }) {
   const oks = recap.filter(r => r.ok).length;
   const stars = oks >= ROUNDS ? 3 : oks >= Math.ceil(ROUNDS * 0.6) ? 2 : 1;
+  // Fire once when a Tamil mode is finished (per-game completion metric).
+  useEffect(() => { track('game_complete', { game: 'tamil', mode }); }, [mode]);
   return (
     <div className={`card card-${color} tl-card`} style={{ '--tl-accent': accent }}>
       <div className="tl-won">

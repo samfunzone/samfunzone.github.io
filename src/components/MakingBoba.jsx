@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { launchConfetti } from '../utils/confetti';
 import { mix, lighten, darken } from '../utils/color';
+import { track } from '../utils/analytics';
 
 const TEAS = [
   { id: 'milk',        name: 'Milk Tea',     color: '#c8956c', foam: '#fff3e0' },
@@ -369,7 +370,7 @@ export default function MakingBoba() {
     }
     setIcePositions(iceSlots.slice(0, Math.min(iceCount, iceSlots.length)));
 
-    setTimeout(() => { setShaking(false); setStep(5); launchConfetti(window.innerWidth/2, 200, 60); }, 1800);
+    setTimeout(() => { setShaking(false); setStep(5); launchConfetti(window.innerWidth/2, 200, 60); track('game_complete', { game: 'boba' }); }, 1800);
   };
 
   const reset = () => {
