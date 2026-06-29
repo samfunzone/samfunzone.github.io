@@ -213,6 +213,7 @@ function MixMode({ onBack }) {
   const [recap, setRecap]   = useState([]);
   const [gain, setGain]     = useState(null);
   const [done, setDone]     = useState(false);
+  const [hint, setHint]     = useState(false);     // reveal romanization for this round
   const timeouts = useRef([]);
 
   useEffect(() => {
@@ -251,12 +252,14 @@ function MixMode({ onBack }) {
     setWrongs(0);
     setPicked(null);
     setStatus('asking');
+    setHint(false);
   }
 
   function restart() {
     setDeck(makeMixDeck());
     setRound(0); setScore(0); setStreak(0); setWrongs(0);
     setPicked(null); setStatus('asking'); setRecap([]); setGain(null); setDone(false);
+    setHint(false);
   }
 
   if (done) {
@@ -264,6 +267,7 @@ function MixMode({ onBack }) {
   }
 
   const correct = compose(q.m, q.u);
+  const showRoman = hint || status === 'right';
   return (
     <div className="card card-orange tl-card" style={{ '--tl-accent': '#f59e0b' }}>
       <TopBar title="🧪 Mix It!" onBack={onBack} score={score} streak={streak} />
@@ -271,11 +275,11 @@ function MixMode({ onBack }) {
 
       <div className="tl-mix-stage">
         <button className="tl-mix-piece" onClick={() => say(q.m.pulli)}>
-          <span>{q.m.pulli}</span><small>{q.m.tr}</small>
+          <span>{q.m.pulli}</span>{showRoman && <small>{q.m.tr}</small>}
         </button>
         <span className="tl-mix-op">➕</span>
         <button className="tl-mix-piece" onClick={() => say(q.u.base)}>
-          <span>{q.u.base}</span><small>{q.u.tr}</small>
+          <span>{q.u.base}</span>{showRoman && <small>{q.u.tr}</small>}
         </button>
         <span className="tl-mix-op">=</span>
         <span className={`tl-mix-answer${status === 'right' ? ' tl-merge' : ''}`}>
@@ -296,6 +300,12 @@ function MixMode({ onBack }) {
           );
         })}
       </div>
+
+      {!showRoman && (
+        <button className="tl-hint-btn" onClick={() => setHint(true)}>
+          💡 Hint: show English sounds
+        </button>
+      )}
     </div>
   );
 }
@@ -485,6 +495,7 @@ function ExtractMode({ onBack }) {
   const [recap, setRecap]         = useState([]);
   const [gain, setGain]           = useState(null);
   const [done, setDone]           = useState(false);
+  const [revealRoman, setRevealRoman] = useState(false); // reveal romanization for this round
   const [arrows, setArrows]       = useState({ u: null, m: null });
 
   const arenaRef  = useRef(null);
@@ -565,14 +576,14 @@ function ExtractMode({ onBack }) {
     if (round + 1 >= ROUNDS) { setDone(true); return; }
     setRound(r => r + 1);
     setWrongs(0); setSelU(null); setSelM(null);
-    setStatus('asking'); setWrongSide(null);
+    setStatus('asking'); setWrongSide(null); setRevealRoman(false);
   }
 
   function restart() {
     setDeck(makeExtractDeck());
     setRound(0); setScore(0); setStreak(0); setWrongs(0);
     setSelU(null); setSelM(null); setStatus('asking'); setWrongSide(null);
-    setRecap([]); setGain(null); setDone(false);
+    setRecap([]); setGain(null); setDone(false); setRevealRoman(false);
   }
 
   if (done) {
@@ -605,10 +616,12 @@ function ExtractMode({ onBack }) {
 
   const hint =
     status === 'wrong'                    ? 'Not quite — try again!'
-    : selU === null && selM === null      ? 'Tap a vowel on the left and a consonant on the right'
-    : selU !== null && selM === null      ? 'Now tap the consonant on the right →'
-    : selU === null && selM !== null      ? '← Now tap the vowel on the left'
+    : selU === null && selM === null      ? 'Tap a consonant on the left and a vowel on the right'
+    : selM !== null && selU === null      ? 'Now tap the vowel on the right →'
+    : selM === null && selU !== null      ? '← Now tap the consonant on the left'
     : '';
+
+  const showRoman = revealRoman || status === 'right';
 
   return (
     <div className="card card-blue tl-card" style={{ '--tl-accent': '#3b82f6' }}>
@@ -616,19 +629,19 @@ function ExtractMode({ onBack }) {
       <Dots round={round} recap={recap} />
 
       <div className="tl-extract-arena" ref={arenaRef}>
-        {/* Left column: uyir (vowel) options */}
+        {/* Left column: mey (consonant) options */}
         <div className="tl-extract-col">
-          <div className="tl-extract-col-hd">உயிர் <span>vowel</span></div>
-          {q.uyirOpts.map((ui, idx) => (
+          <div className="tl-extract-col-hd">மெய் <span>consonant</span></div>
+          {q.meyOpts.map((mi, idx) => (
             <button
-              key={UYIR[ui].base}
-              ref={el => { uRefs.current[idx] = el; }}
-              className={`tl-extract-tile${tileState(idx, true)}`}
+              key={MEY[mi].pulli}
+              ref={el => { mRefs.current[idx] = el; }}
+              className={`tl-extract-tile${tileState(idx, false)}`}
               disabled={status === 'right'}
-              onClick={() => tapU(idx)}
+              onClick={() => tapM(idx)}
             >
-              <span>{UYIR[ui].base}</span>
-              <small>{UYIR[ui].tr}</small>
+              <span>{MEY[mi].pulli}</span>
+              {showRoman && <small>{MEY[mi].tr}</small>}
             </button>
           ))}
         </div>
@@ -647,19 +660,19 @@ function ExtractMode({ onBack }) {
           </div>
         </div>
 
-        {/* Right column: mey (consonant) options */}
+        {/* Right column: uyir (vowel) options */}
         <div className="tl-extract-col">
-          <div className="tl-extract-col-hd">மெய் <span>consonant</span></div>
-          {q.meyOpts.map((mi, idx) => (
+          <div className="tl-extract-col-hd">உயிர் <span>vowel</span></div>
+          {q.uyirOpts.map((ui, idx) => (
             <button
-              key={MEY[mi].pulli}
-              ref={el => { mRefs.current[idx] = el; }}
-              className={`tl-extract-tile${tileState(idx, false)}`}
+              key={UYIR[ui].base}
+              ref={el => { uRefs.current[idx] = el; }}
+              className={`tl-extract-tile${tileState(idx, true)}`}
               disabled={status === 'right'}
-              onClick={() => tapM(idx)}
+              onClick={() => tapU(idx)}
             >
-              <span>{MEY[mi].pulli}</span>
-              <small>{MEY[mi].tr}</small>
+              <span>{UYIR[ui].base}</span>
+              {showRoman && <small>{UYIR[ui].tr}</small>}
             </button>
           ))}
         </div>
@@ -679,6 +692,12 @@ function ExtractMode({ onBack }) {
       </div>
 
       <div className={`tl-extract-hint${status === 'wrong' ? ' tl-extract-hint-err' : ''}`}>{hint}</div>
+
+      {!showRoman && (
+        <button className="tl-hint-btn" onClick={() => setRevealRoman(true)}>
+          💡 Hint: show English sounds
+        </button>
+      )}
     </div>
   );
 }

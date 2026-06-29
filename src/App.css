@@ -3150,13 +3150,16 @@
 .tl-extract-diff { font-size: .72rem; color: #ccc; font-weight: 700; }
 .tl-extract-target {
   font-size: 2.8rem;
+  line-height: 1;
   font-weight: 900;
   color: #333;
   background: #f8f8fc;
   border: 3px solid var(--tl-accent);
   border-radius: 16px;
-  width: 90px;
+  min-width: 90px;
   height: 90px;
+  padding: 0 12px;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3204,6 +3207,21 @@
   min-height: 1.2em;
 }
 .tl-extract-hint-err { color: #e03131; }
+
+.tl-hint-btn {
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px 18px;
+  border: 2px solid var(--tl-accent);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tl-accent);
+  font-size: .9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.tl-hint-btn:hover { background: var(--tl-accent); color: #fff; }
 
 @media (prefers-reduced-motion: reduce) {
   .tl-mode-btn, .tl-body, .tl-option, .tl-bd-answer, .tl-merge,
@@ -3309,6 +3327,6 @@
   .tl-recap { grid-template-columns: repeat(5, 1fr); gap: 6px; }
   .tl-recap-letter { font-size: 1.3rem; }
   .tl-extract-tile { width: 56px; height: 50px; font-size: 1.2rem; }
-  .tl-extract-target { width: 72px; height: 72px; font-size: 2.1rem; }
+  .tl-extract-target { min-width: 72px; height: 72px; font-size: 2.1rem; padding: 0 10px; }
   .tl-extract-arena { min-height: 250px; gap: 4px; }
 }

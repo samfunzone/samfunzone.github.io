@@ -474,7 +474,13 @@ export default function RiddleMachine() {
       </div>
 
       <div className={`riddle-box${shake ? ' riddle-shake' : ''}`}>
-        <div className="riddle-emoji">{riddle.emoji}</div>
+        {/* Many emojis literally depict the answer (🫖 teapot, 🪙 coin…),
+            so keep them hidden until the riddle is solved or revealed. */}
+        <div className="riddle-emoji">
+          {phase === 'correct' || phase === 'wrong' || phase === 'revealed'
+            ? riddle.emoji
+            : '🧩'}
+        </div>
         <p className="riddle-question">{riddle.question}</p>
 
         {hintShown && (
