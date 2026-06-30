@@ -85,6 +85,14 @@ Notes:
   numbers as a lower bound.
 - The last game viewed before leaving the site records ~0s (no following
   pageview to measure against); averages across many sessions stay meaningful.
+- **No heartbeat by design.** Per-game time is measured from the gap between
+  consecutive pageviews, so it under-counts (the last game of a session reads
+  ~0s). A periodic heartbeat ping would close that gap but would over-count idle
+  time — a kid who wanders off with the tab open keeps getting credited. If a
+  heartbeat is ever added, gate it on the Page Visibility API (pause when the tab
+  is hidden) **and** an activity check (only ping after recent pointer/key input),
+  never a raw interval. Until traffic is high enough to need that precision, the
+  conservative under-count is the safer bias for an engagement metric.
 - A generic `track(event, props)` helper is also exported for richer custom
   events later (e.g. `track('game_won', { game: 'numdet', stars: 3 })`).
 
