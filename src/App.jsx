@@ -17,6 +17,7 @@ import WordSearch         from './components/WordSearch';
 import Unscramble         from './components/Unscramble';
 import DoodleDance        from './components/DoodleDance';
 import TamilLetters       from './components/TamilLetters';
+import RunningRaces       from './components/RunningRaces';
 
 const TABS = [
   { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
@@ -35,6 +36,7 @@ const TABS = [
   { id: 'unscramble', label: '🔤 Unscramble',        component: <Unscramble /> },
   { id: 'doodle',     label: '✏️ Doodle Dance',       component: <DoodleDance /> },
   { id: 'tamil',      label: 'அ Tamil Tango',         component: <TamilLetters /> },
+  { id: 'runrace',    label: '🏃 Running Races',      component: <RunningRaces /> },
 ];
 
 export default function App() {

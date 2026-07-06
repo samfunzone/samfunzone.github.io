@@ -3348,6 +3348,196 @@
   .tl-extract-tile-wrong { animation: none; }
 }
 
+/* ── Running Races ── */
+.rr-select-tip {
+  text-align: center;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 14px;
+}
+
+.rr-char-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.rr-char-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px;
+  border: 3px solid var(--rr-accent-lt);
+  border-radius: 16px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s, background .15s;
+}
+.rr-char-card:hover { transform: translateY(-3px); border-color: var(--rr-accent); }
+.rr-char-card:active { transform: scale(.96); }
+.rr-char-emoji { font-size: 2.4rem; }
+.rr-char-label { font-weight: 800; font-size: .9rem; color: var(--rr-accent-dk); }
+
+.rr-arena {
+  position: relative;
+}
+
+.rr-track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(180deg, #eaf6ff, #d9f2e0);
+  border-radius: 18px;
+  padding: 16px 10px;
+}
+
+.rr-goalpost { font-size: 2rem; flex: 0 0 auto; }
+
+.rr-lanes {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rr-lane-label {
+  font-size: .8rem;
+  font-weight: 800;
+  color: #555;
+  margin-bottom: 3px;
+}
+.rr-lane-player .rr-lane-label { color: #1c7ed6; }
+
+.rr-lane-track {
+  position: relative;
+  height: 40px;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 2px rgba(0,0,0,.06);
+}
+
+.rr-lane-clip {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.rr-lane-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--rr-accent-lt), var(--rr-accent));
+  transition: width .1s linear;
+}
+
+.rr-finish-flag {
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 6px;
+  background: repeating-linear-gradient(45deg, #222 0 4px, #fff 4px 8px);
+  opacity: .5;
+}
+
+.rr-runner {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: left .1s linear;
+}
+.rr-runner-emoji { display: inline-block; font-size: 1.7rem; }
+.rr-runner-emoji.rr-bounce { animation: rrBounce .5s ease-in-out infinite; }
+
+.rr-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.6);
+  border-radius: 18px;
+}
+
+.rr-panel {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px 26px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  max-width: 320px;
+}
+.rr-panel-emoji { font-size: 2.6rem; margin-bottom: 6px; }
+.rr-tip { color: #666; font-size: .9rem; margin: 8px 0 14px; }
+.rr-tally { color: #888; font-size: .85rem; margin-top: 6px; }
+
+.rr-trophy { font-size: 3.2rem; animation: rrTrophyPop .5s ease-out; }
+.rr-trophy-dim { opacity: .7; }
+
+.rr-win-line, .rr-lose-line { color: #666; margin: 6px 0 14px; }
+
+.rr-btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.rr-countdown {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #1c7ed6;
+  text-shadow: 0 2px 0 #fff;
+  animation: rrCountIn .6s ease-out;
+}
+
+.rr-mash-btn {
+  display: block;
+  margin: 16px auto 0;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(circle at 35% 30%, #74c0fc, #1c7ed6);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 900;
+  line-height: 1.3;
+  box-shadow: 0 6px 0 #1864ab, 0 8px 16px rgba(0,0,0,.2);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform .06s, box-shadow .06s;
+}
+.rr-mash-btn:active {
+  transform: translateY(4px) scale(.97);
+  box-shadow: 0 2px 0 #1864ab, 0 4px 10px rgba(0,0,0,.2);
+}
+
+@keyframes rrBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes rrCountIn {
+  0% { transform: scale(.4); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes rrTrophyPop {
+  0% { transform: scale(.3) rotate(-15deg); opacity: 0; }
+  70% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rr-runner-emoji.rr-bounce { animation: none; }
+  .rr-countdown { animation: none; }
+  .rr-trophy { animation: none; }
+  .rr-lane-fill, .rr-runner { transition: none; }
+}
+
 /* ── Mobile responsive ── */
 @media (max-width: 600px) {
   .header { padding: 18px 12px 10px; }
@@ -3447,4 +3637,13 @@
   .tl-extract-tile { width: 56px; height: 50px; font-size: 1.2rem; }
   .tl-extract-target { min-width: 72px; height: 72px; font-size: 2.1rem; padding: 0 10px; }
   .tl-extract-arena { min-height: 250px; gap: 4px; }
+
+  /* Running Races */
+  .rr-char-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .rr-char-emoji { font-size: 2rem; }
+  .rr-goalpost { font-size: 1.5rem; }
+  .rr-lane-track { height: 34px; }
+  .rr-runner-emoji { font-size: 1.4rem; }
+  .rr-panel { padding: 16px 18px; }
+  .rr-mash-btn { width: 116px; height: 116px; font-size: 1.15rem; }
 }

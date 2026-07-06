@@ -1,0 +1,262 @@
+import { useState, useEffect, useRef } from 'react';
+import { launchConfetti } from '../utils/confetti';
+import { lighten, darken } from '../utils/color';
+import { track } from '../utils/analytics';
+import { shuffle } from '../utils/shuffle';
+
+const CHARACTERS = [
+  { id: 'cheetah', emoji: '🐆',   label: 'Cheetah',      color: '#ffb020' },
+  { id: 'bunny',   emoji: '🐰',   label: 'Bunny',        color: '#ff8fa3' },
+  { id: 'unicorn', emoji: '🦄',   label: 'Unicorn',      color: '#c084fc' },
+  { id: 'robot',   emoji: '🤖',   label: 'Robo-Runner',  color: '#4fc3f7' },
+  { id: 'dino',    emoji: '🦖',   label: 'Dino',         color: '#81c784' },
+  { id: 'astro',   emoji: '🧑‍🚀', label: 'Astro-Kid',    color: '#ff6b6b' },
+];
+
+const TICK_MS = 100;
+const BASE_PLAYER_SPEED = 10;  // %/sec, idle crawl
+const BOOST_PER_TAP = 4;
+const MAX_BOOST = 34;
+const BOOST_DECAY = 0.93;      // per tick — slower decay so real mashing sustains a lead
+const AI_BASE_MIN = 8;
+const AI_BASE_MAX = 17;        // %/sec — kept below a well-mashed player's sustained speed
+const WOBBLE_AMPLITUDE = 3;
+const RUBBERBAND_GAP = 12;     // % — gap to the PLAYER (not the leader) that triggers rubberbanding
+const COUNTDOWN_START = 3;
+
+const LANES = ['player', 'ai1', 'ai2'];
+
+function rollAI() {
+  return {
+    base: AI_BASE_MIN + Math.random() * (AI_BASE_MAX - AI_BASE_MIN),
+    wobblePhase: Math.random() * Math.PI * 2,
+  };
+}
+
+/* ── One lane: track + progress fill + running character ── */
+function RaceLane({ pos, char, isPlayer, running }) {
+  const accent = char.color;
+  return (
+    <div className={`rr-lane${isPlayer ? ' rr-lane-player' : ''}`}>
+      <div className="rr-lane-label">{isPlayer ? '⭐ You' : char.label}</div>
+      <div className="rr-lane-track"
+           style={{ '--rr-accent': accent, '--rr-accent-lt': lighten(accent, .6) }}>
+        <div className="rr-lane-clip">
+          <div className="rr-lane-fill" style={{ width: `${pos}%` }} />
+          <div className="rr-finish-flag" />
+        </div>
+        <div className="rr-runner" style={{ left: `calc(${pos}% * 0.94)` }}>
+          <span className={`rr-runner-emoji${running ? ' rr-bounce' : ''}`}>{char.emoji}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function RunningRaces() {
+  const [phase, setPhase] = useState('select'); // select | ready | countdown | racing | finish | results
+  const [runner, setRunner] = useState(null);
+  const [aiChars, setAiChars] = useState([]);
+  const [positions, setPositions] = useState({ player: 0, ai1: 0, ai2: 0 });
+  const [count, setCount] = useState(COUNTDOWN_START);
+  const [winner, setWinner] = useState(null);
+  const [tally, setTally] = useState({ wins: 0, races: 0 });
+
+  const posRef = useRef({ player: 0, ai1: 0, ai2: 0 });
+  const aiRef = useRef([rollAI(), rollAI()]);
+  const mashRef = useRef({ boost: 0 });
+  const winnerRef = useRef(null);
+
+  /* Race tick loop */
+  useEffect(() => {
+    if (phase !== 'racing') return;
+    const iv = setInterval(() => {
+      const tickSec = TICK_MS / 1000;
+      const p = posRef.current;
+
+      mashRef.current.boost *= BOOST_DECAY;
+      const playerSpeed = BASE_PLAYER_SPEED + mashRef.current.boost;
+
+      // Rubberband relative to the PLAYER only — an AI drifting far ahead of
+      // the human eases off, and one that's fallen far behind the human (not
+      // behind other AIs) gets a mild nudge, so races stay close either way
+      // without punishing a player who's mashing well and pulling ahead.
+      const aiSpeeds = aiRef.current.map((ai, i) => {
+        const laneKey = i === 0 ? 'ai1' : 'ai2';
+        let speed = ai.base + Math.sin(Date.now() / 400 + ai.wobblePhase) * WOBBLE_AMPLITUDE;
+        const gapToPlayer = p[laneKey] - p.player; // positive: AI ahead of player
+        if (gapToPlayer > RUBBERBAND_GAP) {
+          speed *= 0.75;
+        } else if (gapToPlayer < -RUBBERBAND_GAP) {
+          const behind = -gapToPlayer - RUBBERBAND_GAP;
+          speed *= 1 + Math.min(0.3, behind / 100);
+        }
+        return speed;
+      });
+
+      const next = {
+        player: Math.min(100, p.player + playerSpeed * tickSec),
+        ai1: Math.min(100, p.ai1 + aiSpeeds[0] * tickSec),
+        ai2: Math.min(100, p.ai2 + aiSpeeds[1] * tickSec),
+      };
+      posRef.current = next;
+      setPositions(next);
+
+      if (!winnerRef.current) {
+        const win = LANES.find(l => next[l] >= 100);
+        if (win) {
+          winnerRef.current = win;
+          setWinner(win);
+          setPhase('finish');
+        }
+      }
+    }, TICK_MS);
+    return () => clearInterval(iv);
+  }, [phase]);
+
+  /* Countdown 3-2-1-GO */
+  useEffect(() => {
+    if (phase !== 'countdown') return;
+    const t = setTimeout(() => {
+      if (count <= 0) setPhase('racing');
+      else setCount(c => c - 1);
+    }, 700);
+    return () => clearTimeout(t);
+  }, [phase, count]);
+
+  const pickCharacter = (char) => {
+    setRunner(char);
+    setPhase('ready');
+  };
+
+  const startRace = () => {
+    posRef.current = { player: 0, ai1: 0, ai2: 0 };
+    setPositions({ player: 0, ai1: 0, ai2: 0 });
+    setAiChars(shuffle(CHARACTERS.filter(c => c.id !== runner.id)).slice(0, 2));
+    aiRef.current = [rollAI(), rollAI()];
+    mashRef.current = { boost: 0 };
+    winnerRef.current = null;
+    setWinner(null);
+    setCount(COUNTDOWN_START);
+    setPhase('countdown');
+  };
+
+  const mash = () => {
+    if (phase !== 'racing') return;
+    mashRef.current.boost = Math.min(MAX_BOOST, mashRef.current.boost + BOOST_PER_TAP);
+  };
+
+  const lockResult = (e) => {
+    const won = winner === 'player';
+    setTally(t => ({ wins: t.wins + (won ? 1 : 0), races: t.races + 1 }));
+    track('game_complete', { game: 'runrace', won });
+    if (won) {
+      const x = e?.clientX ?? window.innerWidth / 2;
+      const y = e?.clientY ?? window.innerHeight * 0.3;
+      launchConfetti(x, y, 60);
+    }
+    setPhase('results');
+  };
+
+  const winnerChar = winner === 'player' ? runner
+    : winner === 'ai1' ? aiChars[0]
+    : winner === 'ai2' ? aiChars[1]
+    : null;
+
+  return (
+    <div className="card card-blue">
+      <h2>🏃 Running Races!</h2>
+
+      {phase === 'select' && (
+        <div className="rr-select">
+          <p className="rr-select-tip">Pick your runner!</p>
+          <div className="rr-char-grid">
+            {CHARACTERS.map(c => (
+              <button key={c.id} className="rr-char-card"
+                      style={{ '--rr-accent': c.color, '--rr-accent-lt': lighten(c.color, .7), '--rr-accent-dk': darken(c.color, .25) }}
+                      onClick={() => pickCharacter(c)}>
+                <span className="rr-char-emoji">{c.emoji}</span>
+                <span className="rr-char-label">{c.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {phase !== 'select' && runner && (
+        <div className="rr-arena">
+          <div className="rr-track">
+            <div className="rr-goalpost rr-goalpost-start">🚩</div>
+            <div className="rr-lanes">
+              <RaceLane pos={positions.player} char={runner} isPlayer running={phase === 'racing'} />
+              {aiChars[0] && <RaceLane pos={positions.ai1} char={aiChars[0]} running={phase === 'racing'} />}
+              {aiChars[1] && <RaceLane pos={positions.ai2} char={aiChars[1]} running={phase === 'racing'} />}
+            </div>
+            <div className="rr-goalpost rr-goalpost-finish">🏁</div>
+          </div>
+
+          {phase === 'ready' && (
+            <div className="rr-overlay">
+              <div className="rr-panel">
+                <div className="rr-panel-emoji">{runner.emoji}</div>
+                <h3>{runner.label} is ready!</h3>
+                <p className="rr-tip">Tap GO as fast as you can to win the race!</p>
+                <div className="rr-btn-row">
+                  <button className="btn btn-green" onClick={startRace}>🏁 Start Race!</button>
+                  <button className="btn btn-orange" onClick={() => setPhase('select')}>🔄 Change Runner</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {phase === 'countdown' && (
+            <div className="rr-overlay">
+              <div key={count} className="rr-countdown">{count > 0 ? count : 'GO!'}</div>
+            </div>
+          )}
+
+          {phase === 'racing' && (
+            <button className="rr-mash-btn" onPointerDown={mash}>
+              🏃<br />RUN!
+            </button>
+          )}
+
+          {phase === 'finish' && (
+            <div className="rr-overlay">
+              <div className="rr-panel">
+                <div className="rr-panel-emoji">{winnerChar?.emoji}</div>
+                <h3>{winner === 'player' ? 'You crossed the line first!' : `${winnerChar?.label} crossed the line first!`}</h3>
+                <button className="btn btn-red" onClick={lockResult}>🛑 Stop &amp; See Results!</button>
+              </div>
+            </div>
+          )}
+
+          {phase === 'results' && (
+            <div className="rr-overlay">
+              <div className={`rr-panel${winner === 'player' ? ' rr-panel-win' : ' rr-panel-lose'}`}>
+                {winner === 'player' ? (
+                  <>
+                    <div className="rr-trophy">🏆</div>
+                    <h3>{runner.emoji} {runner.label} wins!!</h3>
+                    <p className="rr-win-line">You crossed the finish line first!</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="rr-trophy rr-trophy-dim">🏅</div>
+                    <h3>{winnerChar?.emoji} {winnerChar?.label} got there first!</h3>
+                    <p className="rr-lose-line">So close — try again, you'll catch them! 💪</p>
+                  </>
+                )}
+                <p className="rr-tally">🏆 Won {tally.wins} of {tally.races} race{tally.races === 1 ? '' : 's'}</p>
+                <div className="rr-btn-row">
+                  <button className="btn btn-green" onClick={startRace}>🔁 Race Again!</button>
+                  <button className="btn btn-blue" onClick={() => setPhase('select')}>🔄 Change Runner</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
