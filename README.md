@@ -24,6 +24,7 @@ A colorful, interactive React app built for kids — packed with games, creative
 | 🔤 Unscramble | Rearrange scrambled letters into the right word — 4 categories, 8 rounds shortest→longest, two-level hints (emoji, then ghost first letter), streak scoring |
 | ✏️ Doodle Dance | Freeform doodle activity with playful animated flourishes |
 | அ Tamil Tango | Learn the Tamil alphabet — a classroom in disguise. Two modes: **Learn Grid** (tap any of the 216 உயிர்மெய் cells to see how a consonant + vowel combine, e.g. க் + ஆ = கா → "kaa") and **Mix It!** (join a consonant + vowel to build the right letter; look-alike distractors reinforce the vowel signs). Every letter shows its romanized spelling. _Sound is currently disabled — see TODO below._ |
+| 🏃 Running Races | Tap-to-mash race against 2 AI runners along a zigzag track — pick a name, choose from 12 characters, and race at easy/medium/hard difficulty; rubberband AI keeps it close either way |
 
 > Whack-a-Mole, Magic Loops, and Enchanted Garden exist in `src/components/` but are currently disabled (not in the `TABS` array).
 
@@ -71,7 +72,7 @@ consent banner needed). The script tag lives in `index.html`; the helpers are in
   moment: Memory Match, Number Detective (real solve only, not "give up"),
   Bubble Pop (timer ran out), Word Search, Unscramble, Family Feud, Tamil Tango
   (with `mode`), Drawing (Save), Making Boba (finished cup), Yummy Food (served,
-  with `dish`). Per game, drop-off ≈ `1 − (game_complete ÷ /game/<id> opens)` —
+  with `dish`), Running Races (race result locked in, with `won`). Per game, drop-off ≈ `1 − (game_complete ÷ /game/<id> opens)` —
   many opens but few completes means kids start it and lose interest. Umami's
   **Funnels** can chart open → complete directly. Open-ended toys (Dressing
   Dolls, My Room, Squishy, Joke, Riddle, Doodle) have no completion event — for
