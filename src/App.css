@@ -395,6 +395,32 @@
 }
 .ing-star  { margin-left: auto; font-size: .9rem; flex-shrink: 0; }
 
+.ingredient-variant-group { margin-bottom: 2px; }
+.ingredient-variant-label { display: block; font-weight: bold; margin-bottom: 6px; font-size: .95rem; }
+.ingredient-variant-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ingredient-variant-chip {
+  padding: 6px 12px;
+  border: 2px solid #ffe0b2;
+  border-radius: 50px;
+  background: linear-gradient(180deg, #ffffff, #fffaf3);
+  font-family: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.ingredient-variant-chip:hover {
+  border-color: #ff9800;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(255,152,0,.15);
+}
+.ingredient-variant-chip.selected {
+  background: linear-gradient(180deg, #ffcc80, #ffa726);
+  border-color: #e65100;
+  font-weight: bold;
+  color: #5d2c00;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 2px 8px rgba(255,152,0,.18);
+}
+
 /* ── Yummy Food: panel + SVG animations ── */
 .food-panel-in { animation: foodPanelIn 0.35s ease backwards; }
 @keyframes foodPanelIn {

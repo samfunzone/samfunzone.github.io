@@ -68,8 +68,12 @@ const Steam = ({ xs, y }) => (
 /* ─────────────────────────────
    Food SVG Components
 ───────────────────────────── */
-function PizzaSVG({ added, done }) {
+const PROTEIN_COLORS = { meat: '#c62828', beef: '#c62828', chicken: '#e8a854', veg: '#5a8f3c' };
+
+function PizzaSVG({ added, variant = {}, done }) {
   const h = id => added.has(id);
+  const pepVariant = variant.pepperoni ?? 'meat';
+  const pepColor = PROTEIN_COLORS[pepVariant];
   const tops = [[78,78],[116,72],[97,105],[68,108],[128,100],[108,128],[74,128]];
   const pepColors = ['#43a047','#ffee58','#e53935','#ff9800'];
   return (
@@ -104,7 +108,7 @@ function PizzaSVG({ added, done }) {
           <stop offset="65%"  stopColor="#ffd54f" />
           <stop offset="100%" stopColor={darken('#ffd54f', .15)} />
         </radialGradient>
-        <Glossy id="food-pep"   c="#c62828" />
+        <Glossy id="food-pep"   c={pepColor} />
         <Glossy id="food-olive" c="#33691e" />
         <VGrad  id="food-mush-cap"  c="#8d6e63" />
         <VGrad  id="food-mush-stem" c="#d7ccc8" hi={0.15} lo={0.1} />
@@ -187,15 +191,25 @@ function PizzaSVG({ added, done }) {
 
       {h('pepperoni') && tops.map(([cx,cy],i) => (
         <g key={i} className="food-ing" style={{ animationDelay: `${i * 60}ms` }}>
-          {/* cupped crisp rim */}
-          <circle cx={cx} cy={cy} r="11.5" fill={darken('#c62828', .28)} />
-          <circle cx={cx} cy={cy} r="9.5" fill="url(#food-pep)" />
-          <path d={`M${cx-7},${cy+5.5} a9,9 0 0 0 14,0`} stroke={darken('#b71c1c', .3)}
-            strokeWidth="1.6" fill="none" opacity=".55" />
-          {[[3,2],[-3,-2],[1,-4]].map(([dx,dy],j) => (
-            <circle key={j} cx={cx+dx} cy={cy+dy} r="1.8" fill={lighten('#c62828', .35)} opacity=".6" />
-          ))}
-          <ellipse cx={cx-3.5} cy={cy-4} rx="3.4" ry="2" fill="rgba(255,255,255,.5)" />
+          {/* cupped crisp rim (meat) or diced chunk (chicken/veg) */}
+          {pepVariant === 'meat' ? (
+            <>
+              <circle cx={cx} cy={cy} r="11.5" fill={darken(pepColor, .28)} />
+              <circle cx={cx} cy={cy} r="9.5" fill="url(#food-pep)" />
+              <path d={`M${cx-7},${cy+5.5} a9,9 0 0 0 14,0`} stroke={darken(pepColor, .35)}
+                strokeWidth="1.6" fill="none" opacity=".55" />
+              {[[3,2],[-3,-2],[1,-4]].map(([dx,dy],j) => (
+                <circle key={j} cx={cx+dx} cy={cy+dy} r="1.8" fill={lighten(pepColor, .35)} opacity=".6" />
+              ))}
+              <ellipse cx={cx-3.5} cy={cy-4} rx="3.4" ry="2" fill="rgba(255,255,255,.5)" />
+            </>
+          ) : (
+            <g transform={`rotate(${(i*37)%40-20} ${cx} ${cy})`}>
+              <rect x={cx-9} y={cy-8} width="18" height="16" rx="3.5" fill={darken(pepColor, .22)} />
+              <rect x={cx-8} y={cy-7} width="15" height="12" rx="3" fill="url(#food-pep)" />
+              <ellipse cx={cx-4} cy={cy-4} rx="3" ry="1.8" fill="rgba(255,255,255,.45)" />
+            </g>
+          )}
         </g>
       ))}
 
@@ -252,8 +266,16 @@ function PizzaSVG({ added, done }) {
   );
 }
 
-function BurgerSVG({ added, done }) {
+const PATTY_STYLES = {
+  beef:    { c: '#6d3c1e', dark: '#4a2812', texture: 'grill' },
+  chicken: { c: '#c17f2e', dark: '#8a5a1c', texture: 'bread' },
+  veg:     { c: '#7c8f4a', dark: '#54622f', texture: 'fleck' },
+};
+
+function BurgerSVG({ added, variant = {}, done }) {
   const h = id => added.has(id);
+  const pattyVariant = variant.patty ?? 'beef';
+  const pattyStyle = PATTY_STYLES[pattyVariant];
 
   let curY = 234;
   const nextY = height => { curY -= height; return curY; };
@@ -271,7 +293,7 @@ function BurgerSVG({ added, done }) {
       <defs>
         <Shadow />
         <VGrad id="food-bun"    c="#e8a44a" />
-        <VGrad id="food-patty"  c="#6d3c1e" hi={0.22} lo={0.3} />
+        <VGrad id="food-patty"  c={pattyStyle.c} hi={0.22} lo={0.3} />
         <VGrad id="food-bcheese" c="#ffd740" hi={0.3} lo={0.18} />
         <Glossy id="food-btomato" c="#e53935" />
         <linearGradient id="food-onion" x1="0" y1="0" x2="0" y2="1">
@@ -294,16 +316,36 @@ function BurgerSVG({ added, done }) {
       {pattyY !== null && <g className="food-ing">
         <ellipse cx="100" cy={pattyY+25} rx="68" ry="4" fill="#000" opacity=".09" />
         <rect x="30" y={pattyY} width={140} height={24} rx={12} fill="url(#food-patty)" />
-        <rect x="34" y={pattyY+2} width={132} height={10} rx={5} fill={lighten('#8b4e28', .12)} opacity=".7" />
-        {/* char grill marks, two directions */}
-        {[52,76,100,124,148].map((x,i) => (
-          <line key={i} x1={x} y1={pattyY+2} x2={x-8} y2={pattyY+22}
-            stroke={darken('#4a2812', .15)} strokeWidth="2" opacity=".45" />
-        ))}
-        {[64,112].map((x,i) => (
-          <line key={i} x1={x} y1={pattyY+3} x2={x+10} y2={pattyY+21}
-            stroke={darken('#4a2812', .2)} strokeWidth="1.5" opacity=".3" />
-        ))}
+        <rect x="34" y={pattyY+2} width={132} height={10} rx={5} fill={lighten(pattyStyle.c, .12)} opacity=".7" />
+        {pattyStyle.texture === 'grill' && <>
+          {/* char grill marks, two directions */}
+          {[52,76,100,124,148].map((x,i) => (
+            <line key={i} x1={x} y1={pattyY+2} x2={x-8} y2={pattyY+22}
+              stroke={darken(pattyStyle.dark, .15)} strokeWidth="2" opacity=".45" />
+          ))}
+          {[64,112].map((x,i) => (
+            <line key={i} x1={x} y1={pattyY+3} x2={x+10} y2={pattyY+21}
+              stroke={darken(pattyStyle.dark, .2)} strokeWidth="1.5" opacity=".3" />
+          ))}
+        </>}
+        {pattyStyle.texture === 'bread' && <>
+          {/* breaded stipple */}
+          {[52,76,100,124,148].map((x,i) => (
+            <circle key={i} cx={x} cy={pattyY+8+((i*7)%8)} r="1.6" fill={darken(pattyStyle.dark, .1)} opacity=".5" />
+          ))}
+          {[64,112].map((x,i) => (
+            <circle key={i} cx={x} cy={pattyY+16-((i*5)%6)} r="1.6" fill={darken(pattyStyle.dark, .1)} opacity=".5" />
+          ))}
+        </>}
+        {pattyStyle.texture === 'fleck' && <>
+          {/* veggie/oat flecks */}
+          {[52,76,100,124,148].map((x,i) => (
+            <circle key={i} cx={x} cy={pattyY+8+((i*7)%8)} r="1.6" fill={lighten('#4a7a2a', .1)} opacity=".65" />
+          ))}
+          {[64,112].map((x,i) => (
+            <circle key={i} cx={x} cy={pattyY+16-((i*5)%6)} r="1.6" fill={lighten('#4a7a2a', .1)} opacity=".65" />
+          ))}
+        </>}
         {/* juicy glints */}
         <ellipse cx="62" cy={pattyY+7} rx="7" ry="2.4" fill="#fff" opacity=".22" />
         <ellipse cx="128" cy={pattyY+9} rx="5" ry="2" fill="#fff" opacity=".18" />
@@ -705,8 +747,21 @@ function CakeSVG({ added, done }) {
   );
 }
 
-function TacoSVG({ added, done }) {
+const MEAT_STYLES = {
+  beef:    { c: '#8d4c2a', shape: 'crumb' },
+  chicken: { c: '#a8681f', shape: 'shred' },
+  veg:     { c: '#4a2f22', shape: 'crumb' },
+};
+
+function TacoSVG({ added, variant = {}, done }) {
   const h = id => added.has(id);
+  const meatVariant = variant.meat ?? 'beef';
+  const meatStyle = MEAT_STYLES[meatVariant];
+  // Point on the meat guide curve (quadratic bezier along the taco fold)
+  const mq = t => [
+    (1-t)*(1-t)*52 + 2*t*(1-t)*110 + t*t*168,
+    (1-t)*(1-t)*144 + 2*t*(1-t)*52 + t*t*144,
+  ];
   // Point on the lettuce guide curve (quadratic bezier along the taco fold)
   const lq = t => [
     (1-t)*(1-t)*48 + 2*t*(1-t)*110 + t*t*172,
@@ -727,7 +782,7 @@ function TacoSVG({ added, done }) {
           <stop offset="45%"  stopColor="#e8b050" />
           <stop offset="100%" stopColor={darken('#e8b050', .22)} />
         </linearGradient>
-        <VGrad id="food-meat" c="#8d4c2a" hi={0.15} lo={0.28} />
+        <VGrad id="food-meat" c={meatStyle.c} hi={0.15} lo={0.28} />
         <VGrad id="food-tlettuce" c="#66bb6a" hi={0.25} lo={0.2} />
         <Glossy id="food-ttomato" c="#e53935" />
         <Glossy id="food-salsa" c="#ff5722" />
@@ -752,15 +807,26 @@ function TacoSVG({ added, done }) {
           strokeWidth="24" strokeLinecap="round" />
         {/* crumbly silhouette along the top edge */}
         {[.14,.27,.4,.53,.66,.79,.9].map((t,i) => {
-          const mx = (1-t)*(1-t)*52 + 2*t*(1-t)*110 + t*t*168;
-          const my = (1-t)*(1-t)*144 + 2*t*(1-t)*52 + t*t*144;
-          return <circle key={i} cx={mx} cy={my-9} r={5 + (i*5)%3} fill={darken('#8d4c2a', .05)} />;
+          const [mx,my] = mq(t);
+          return <circle key={i} cx={mx} cy={my-9} r={5 + (i*5)%3} fill={darken(meatStyle.c, .05)} />;
         })}
-        {[[70,112],[88,98],[110,92],[132,98],[150,112]].map(([mx,my],i) => (
-          <circle key={i} cx={mx} cy={my} r={3.2 + (i*7)%3} fill={darken('#8d4c2a', .22)} opacity=".75" />
-        ))}
+        {meatStyle.shape === 'shred' ? (
+          [.15,.32,.48,.64,.8].map((t,i) => {
+            const [mx,my] = mq(t);
+            const [mx2,my2] = mq(Math.min(t+.04, 1));
+            const angle = Math.atan2(my2-my, mx2-mx) * 180 / Math.PI;
+            return (
+              <ellipse key={i} cx={mx} cy={my} rx="6.5" ry="2.2" fill={darken(meatStyle.c, .18)} opacity=".8"
+                transform={`rotate(${angle} ${mx} ${my})`} />
+            );
+          })
+        ) : (
+          [[70,112],[88,98],[110,92],[132,98],[150,112]].map(([mx,my],i) => (
+            <circle key={i} cx={mx} cy={my} r={3.2 + (i*7)%3} fill={darken(meatStyle.c, .22)} opacity=".75" />
+          ))
+        )}
         {[[79,104],[100,93],[121,94],[141,104]].map(([mx,my],i) => (
-          <circle key={i} cx={mx} cy={my} r="2.2" fill={lighten('#8d4c2a', .28)} opacity=".8" />
+          <circle key={i} cx={mx} cy={my} r="2.2" fill={lighten(meatStyle.c, .28)} opacity=".8" />
         ))}
       </g>}
 
@@ -864,8 +930,16 @@ function TacoSVG({ added, done }) {
   );
 }
 
-function SandwichSVG({ added, done }) {
+const HAM_STYLES = {
+  ham:     { c: '#ef8da0', fold: '#f8bbd0' },
+  chicken: { c: '#c17f2e', fold: '#ecc98a' },
+  veg:     { c: '#a7d489', fold: '#e8f5cf' },
+};
+
+function SandwichSVG({ added, variant = {}, done }) {
   const h = id => added.has(id);
+  const hamVariant = variant.ham ?? 'ham';
+  const hamStyle = HAM_STYLES[hamVariant];
 
   let curY = 232;
   const nextY = height => { curY -= height; return curY; };
@@ -885,7 +959,7 @@ function SandwichSVG({ added, done }) {
         <Shadow />
         <VGrad id="food-crust" c="#e0a35c" hi={0.15} lo={0.2} />
         <VGrad id="food-crumb" c="#f6e2b3" hi={0.2} lo={0.08} />
-        <Glossy id="food-ham" c="#ef8da0" hi={0.35} lo={0.18} />
+        <Glossy id="food-ham" c={hamStyle.c} hi={0.35} lo={0.18} />
         <VGrad id="food-scheese" c="#ffca28" hi={0.3} lo={0.15} />
         <VGrad id="food-slettuce" c="#7cb342" hi={0.3} lo={0.2} />
         <Glossy id="food-stomato" c="#e53935" />
@@ -913,10 +987,23 @@ function SandwichSVG({ added, done }) {
         <g key={i} className="food-ing" style={{ animationDelay: `${i * 60}ms` }}>
           <g transform={`rotate(${(i-1)*4} ${cx} ${hamY+8})`}>
             <ellipse cx={cx} cy={hamY+8} rx={34} ry={8.5} fill="url(#food-ham)"
-              stroke={darken('#ef8da0', .15)} strokeWidth="1" opacity=".95" />
-            {/* ruffled folds */}
-            <path d={`M${cx-22},${hamY+6} q8,5 16,0`} fill="none" stroke="#f8bbd0" strokeWidth="1.6" opacity=".7" />
-            <path d={`M${cx+2},${hamY+10} q8,4 16,-1`} fill="none" stroke="#f8bbd0" strokeWidth="1.4" opacity=".6" />
+              stroke={darken(hamStyle.c, .15)} strokeWidth="1" opacity=".95" />
+            {hamVariant === 'chicken' ? (
+              /* sliced shred lines */
+              <>
+                <path d={`M${cx-24},${hamY+8} L${cx-6},${hamY+8}`} fill="none" stroke={hamStyle.fold} strokeWidth="1.4" opacity=".7" />
+                <path d={`M${cx-2},${hamY+6} L${cx+16},${hamY+6}`} fill="none" stroke={hamStyle.fold} strokeWidth="1.4" opacity=".6" />
+                <path d={`M${cx+4},${hamY+10} L${cx+22},${hamY+10}`} fill="none" stroke={hamStyle.fold} strokeWidth="1.2" opacity=".55" />
+              </>
+            ) : (
+              /* ruffled folds (ham) or leaf vein (veg) */
+              <>
+                <path d={`M${cx-22},${hamY+6} q8,5 16,0`} fill="none" stroke={hamStyle.fold}
+                  strokeWidth={hamVariant === 'veg' ? 1 : 1.6} opacity={hamVariant === 'veg' ? .55 : .7} />
+                <path d={`M${cx+2},${hamY+10} q8,4 16,-1`} fill="none" stroke={hamStyle.fold}
+                  strokeWidth={hamVariant === 'veg' ? .9 : 1.4} opacity={hamVariant === 'veg' ? .5 : .6} />
+              </>
+            )}
           </g>
         </g>
       ))}
@@ -1241,7 +1328,12 @@ const FOODS = [
       { id:'dough',     label:'🍞 Pizza Dough',    req:true  },
       { id:'sauce',     label:'🍅 Tomato Sauce',   req:true  },
       { id:'cheese',    label:'🧀 Mozzarella',     req:true  },
-      { id:'pepperoni', label:'🔴 Pepperoni',      req:false },
+      { id:'pepperoni', label:'🍕 Protein Topping', req:false,
+        variants: [
+          { id:'meat',    label:'🔴 Pepperoni' },
+          { id:'chicken', label:'🍗 Chicken Bits' },
+          { id:'veg',     label:'🍄 Veggie Mix' },
+        ] },
       { id:'mushroom',  label:'🍄 Mushrooms',      req:false },
       { id:'pepper',    label:'🫑 Bell Peppers',   req:false },
       { id:'olive',     label:'🫒 Olives',         req:false },
@@ -1254,7 +1346,12 @@ const FOODS = [
     optional: ['cheese','lettuce','tomato','onion'],
     ingredients: [
       { id:'bun',     label:'🍞 Burger Bun',    req:true  },
-      { id:'patty',   label:'🥩 Beef Patty',    req:true  },
+      { id:'patty',   label:'🥩 Choose Your Patty', req:true,
+        variants: [
+          { id:'beef',    label:'🥩 Beef Patty' },
+          { id:'chicken', label:'🍗 Chicken Patty' },
+          { id:'veg',     label:'🌱 Veggie Patty' },
+        ] },
       { id:'cheese',  label:'🧀 Cheese Slice',  req:false },
       { id:'lettuce', label:'🥬 Lettuce',        req:false },
       { id:'tomato',  label:'🍅 Tomato',         req:false },
@@ -1268,7 +1365,12 @@ const FOODS = [
     optional: ['cheese','lettuce','tomato','cucumber','mayo'],
     ingredients: [
       { id:'bread',    label:'🍞 Bread Slices',  req:true  },
-      { id:'ham',      label:'🍖 Ham',           req:true  },
+      { id:'ham',      label:'🥪 Choose Your Filling', req:true,
+        variants: [
+          { id:'ham',     label:'🍖 Ham' },
+          { id:'chicken', label:'🍗 Chicken' },
+          { id:'veg',     label:'🥬 Veggie Wrap' },
+        ] },
       { id:'cheese',   label:'🧀 Cheese Slice',  req:false },
       { id:'lettuce',  label:'🥬 Lettuce',        req:false },
       { id:'tomato',   label:'🍅 Tomato',         req:false },
@@ -1329,7 +1431,12 @@ const FOODS = [
     optional: ['lettuce','tomato','cheese','sourcream','salsa','jalapeno'],
     ingredients: [
       { id:'shell',     label:'🌮 Taco Shell',     req:true  },
-      { id:'meat',      label:'🥩 Seasoned Meat',  req:true  },
+      { id:'meat',      label:'🌮 Choose Your Protein', req:true,
+        variants: [
+          { id:'beef',    label:'🥩 Beef' },
+          { id:'chicken', label:'🍗 Chicken' },
+          { id:'veg',     label:'🫘 Bean & Veggie' },
+        ] },
       { id:'lettuce',   label:'🥬 Lettuce',         req:false },
       { id:'tomato',    label:'🍅 Tomato',          req:false },
       { id:'cheese',    label:'🧀 Cheese',          req:false },
@@ -1361,6 +1468,7 @@ const FOODS = [
 export default function MakingYummyFood() {
   const [food,    setFood]    = useState(null);
   const [added,   setAdded]   = useState(new Set());
+  const [variant, setVariant] = useState({});
   const [cooking, setCooking] = useState(false);
   const [done,    setDone]    = useState(false);
 
@@ -1368,6 +1476,19 @@ export default function MakingYummyFood() {
     setAdded(prev => {
       const n = new Set(prev);
       n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  };
+
+  const selectVariant = (ing, vId) => {
+    setVariant(prev => ({ ...prev, [ing.id]: vId }));
+    setAdded(prev => new Set(prev).add(ing.id));
+  };
+
+  const removeIngredient = (id) => {
+    setAdded(prev => {
+      const n = new Set(prev);
+      n.delete(id);
       return n;
     });
   };
@@ -1385,7 +1506,7 @@ export default function MakingYummyFood() {
   };
 
   const reset = () => {
-    setFood(null); setAdded(new Set()); setCooking(false); setDone(false);
+    setFood(null); setAdded(new Set()); setVariant({}); setCooking(false); setDone(false);
   };
 
   if (done && food) {
@@ -1397,7 +1518,7 @@ export default function MakingYummyFood() {
           <h3 style={{ fontSize:'1.8rem', color:'#e65100' }}>Your {food.name} is ready! {food.emoji}</h3>
           <div style={{ display:'flex', justifyContent:'center', margin:'16px 0' }}>
             <div className="food-done-viz">
-              <Viz added={added} done />
+              <Viz added={added} variant={variant} done />
             </div>
           </div>
           <div className="food-done-card">
@@ -1445,7 +1566,7 @@ export default function MakingYummyFood() {
         {/* Visual */}
         <div className="food-viz-area">
           <div className={cooking ? 'food-cooking' : ''}>
-            <Viz added={added} />
+            <Viz added={added} variant={variant} />
           </div>
           {cooking && (
             <div className="cooking-overlay">
@@ -1466,7 +1587,32 @@ export default function MakingYummyFood() {
           </p>
 
           <div className="ingredient-list">
-            {food.ingredients.map(ing => (
+            {food.ingredients.map(ing => ing.variants ? (
+              <div key={ing.id} className="ingredient-variant-group">
+                <span className="ingredient-variant-label">
+                  {ing.label}{ing.req && <span className="ing-star">⭐</span>}
+                </span>
+                <div className="ingredient-variant-chips">
+                  {ing.variants.map(v => (
+                    <button
+                      key={v.id}
+                      className={`ingredient-variant-chip${added.has(ing.id) && (variant[ing.id] ?? ing.variants[0].id) === v.id ? ' selected' : ''}`}
+                      onClick={() => selectVariant(ing, v.id)}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                  {!ing.req && (
+                    <button
+                      className={`ingredient-variant-chip${!added.has(ing.id) ? ' selected' : ''}`}
+                      onClick={() => removeIngredient(ing.id)}
+                    >
+                      🚫 None
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
               <button
                 key={ing.id}
                 className={`ingredient-btn${added.has(ing.id) ? ' added' : ''}${ing.req ? ' required' : ''}`}
