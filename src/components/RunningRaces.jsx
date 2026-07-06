@@ -5,12 +5,24 @@ import { track } from '../utils/analytics';
 import { shuffle } from '../utils/shuffle';
 
 const CHARACTERS = [
-  { id: 'cheetah', emoji: '🐆',   label: 'Cheetah',      color: '#ffb020' },
-  { id: 'bunny',   emoji: '🐰',   label: 'Bunny',        color: '#ff8fa3' },
-  { id: 'unicorn', emoji: '🦄',   label: 'Unicorn',      color: '#c084fc' },
-  { id: 'robot',   emoji: '🤖',   label: 'Robo-Runner',  color: '#4fc3f7' },
-  { id: 'dino',    emoji: '🦖',   label: 'Dino',         color: '#81c784' },
-  { id: 'astro',   emoji: '🧑‍🚀', label: 'Astro-Kid',    color: '#ff6b6b' },
+  { id: 'cheetah',  emoji: '🐆',   label: 'Cheetah',      color: '#ffb020' },
+  { id: 'bunny',    emoji: '🐰',   label: 'Bunny',        color: '#ff8fa3' },
+  { id: 'unicorn',  emoji: '🦄',   label: 'Unicorn',      color: '#c084fc' },
+  { id: 'robot',    emoji: '🤖',   label: 'Robo-Runner',  color: '#4fc3f7' },
+  { id: 'dino',     emoji: '🦖',   label: 'Dino',         color: '#81c784' },
+  { id: 'astro',    emoji: '🧑‍🚀', label: 'Astro-Kid',    color: '#ff6b6b' },
+  { id: 'turtle',   emoji: '🐢',   label: 'Turtle',       color: '#20c997' },
+  { id: 'fox',      emoji: '🦊',   label: 'Fox',          color: '#fd7e14' },
+  { id: 'frog',     emoji: '🐸',   label: 'Frog',         color: '#2f9e44' },
+  { id: 'penguin',  emoji: '🐧',   label: 'Penguin',      color: '#364fc7' },
+  { id: 'kangaroo', emoji: '🦘',   label: 'Kangaroo',     color: '#a9743c' },
+  { id: 'owl',      emoji: '🦉',   label: 'Owl',          color: '#495057' },
+];
+
+const DIFFICULTIES = [
+  { id: 'easy',   label: '🐣 Easy',   desc: 'Chill pace',        aiMin: 6,  aiMax: 13, rubberGap: 14, catchMax: 0.20, easeOff: 0.60 },
+  { id: 'medium', label: '⚡ Medium', desc: 'Needs steady taps', aiMin: 9,  aiMax: 17, rubberGap: 12, catchMax: 0.30, easeOff: 0.75 },
+  { id: 'hard',   label: '🔥 Hard',   desc: 'Mash mash mash!',   aiMin: 12, aiMax: 22, rubberGap: 9,  catchMax: 0.45, easeOff: 0.88 },
 ];
 
 const TICK_MS = 100;
@@ -18,37 +30,65 @@ const BASE_PLAYER_SPEED = 10;  // %/sec, idle crawl
 const BOOST_PER_TAP = 4;
 const MAX_BOOST = 34;
 const BOOST_DECAY = 0.93;      // per tick — slower decay so real mashing sustains a lead
-const AI_BASE_MIN = 8;
-const AI_BASE_MAX = 17;        // %/sec — kept below a well-mashed player's sustained speed
 const WOBBLE_AMPLITUDE = 3;
-const RUBBERBAND_GAP = 12;     // % — gap to the PLAYER (not the leader) that triggers rubberbanding
 const COUNTDOWN_START = 3;
 
 const LANES = ['player', 'ai1', 'ai2'];
 
-function rollAI() {
+function rollAI(diff) {
   return {
-    base: AI_BASE_MIN + Math.random() * (AI_BASE_MAX - AI_BASE_MIN),
+    base: diff.aiMin + Math.random() * (diff.aiMax - diff.aiMin),
     wobblePhase: Math.random() * Math.PI * 2,
   };
 }
 
-/* ── One lane: track + progress fill + running character ── */
+/* ── Zigzag lane path (shared shape, plain point math — no DOM measuring needed) ──
+   viewBox is 300×40 (a flat, wide aspect close to the rendered lane box) so the
+   SVG scales ~uniformly with no preserveAspectRatio stretch — a non-uniform
+   stretch combined with stroke-dasharray corrupts the progress-fill rendering. */
+const ZIGZAG_PTS = [
+  { x: 6,   y: 20 },
+  { x: 48,  y: 4 },
+  { x: 90,  y: 36 },
+  { x: 132, y: 4 },
+  { x: 174, y: 36 },
+  { x: 216, y: 4 },
+  { x: 258, y: 36 },
+  { x: 294, y: 20 },
+];
+const ZIGZAG_D = ZIGZAG_PTS.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+const ZIGZAG_SEG_LEN = ZIGZAG_PTS.slice(1).map((p, i) => Math.hypot(p.x - ZIGZAG_PTS[i].x, p.y - ZIGZAG_PTS[i].y));
+const ZIGZAG_CUM = (() => { let c = 0; return ZIGZAG_SEG_LEN.map(l => (c += l)); })();
+const ZIGZAG_TOTAL_LEN = ZIGZAG_CUM[ZIGZAG_CUM.length - 1];
+
+function pointAtProgress(pct) {
+  const target = (pct / 100) * ZIGZAG_TOTAL_LEN;
+  let segIdx = 0;
+  while (segIdx < ZIGZAG_CUM.length - 1 && ZIGZAG_CUM[segIdx] < target) segIdx++;
+  const segStart = segIdx === 0 ? 0 : ZIGZAG_CUM[segIdx - 1];
+  const segLen = ZIGZAG_SEG_LEN[segIdx] || 1;
+  const t = Math.min(1, Math.max(0, (target - segStart) / segLen));
+  const a = ZIGZAG_PTS[segIdx];
+  const b = ZIGZAG_PTS[segIdx + 1];
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+}
+
+/* ── One lane: zigzag track + progress fill + running character ── */
 function RaceLane({ pos, char, isPlayer, running }) {
   const accent = char.color;
+  const pt = pointAtProgress(pos);
+  const fillLen = (pos / 100) * ZIGZAG_TOTAL_LEN;
   return (
     <div className={`rr-lane${isPlayer ? ' rr-lane-player' : ''}`}>
       <div className="rr-lane-label">{isPlayer ? '⭐ You' : char.label}</div>
-      <div className="rr-lane-track"
+      <svg viewBox="0 0 300 40" className="rr-lane-svg"
            style={{ '--rr-accent': accent, '--rr-accent-lt': lighten(accent, .6) }}>
-        <div className="rr-lane-clip">
-          <div className="rr-lane-fill" style={{ width: `${pos}%` }} />
-          <div className="rr-finish-flag" />
-        </div>
-        <div className="rr-runner" style={{ left: `calc(${pos}% * 0.94)` }}>
-          <span className={`rr-runner-emoji${running ? ' rr-bounce' : ''}`}>{char.emoji}</span>
-        </div>
-      </div>
+        <path d={ZIGZAG_D} className="rr-zig-track" />
+        <path d={ZIGZAG_D} className="rr-zig-fill"
+              style={{ strokeDasharray: `${fillLen} ${ZIGZAG_TOTAL_LEN}` }} />
+        <text x={pt.x} y={pt.y} textAnchor="middle" dominantBaseline="central"
+              className={`rr-zig-runner${running ? ' rr-bounce' : ''}`}>{char.emoji}</text>
+      </svg>
     </div>
   );
 }
@@ -56,6 +96,7 @@ function RaceLane({ pos, char, isPlayer, running }) {
 export default function RunningRaces() {
   const [phase, setPhase] = useState('select'); // select | ready | countdown | racing | finish | results
   const [runner, setRunner] = useState(null);
+  const [difficulty, setDifficulty] = useState(DIFFICULTIES[1]);
   const [aiChars, setAiChars] = useState([]);
   const [positions, setPositions] = useState({ player: 0, ai1: 0, ai2: 0 });
   const [count, setCount] = useState(COUNTDOWN_START);
@@ -63,7 +104,8 @@ export default function RunningRaces() {
   const [tally, setTally] = useState({ wins: 0, races: 0 });
 
   const posRef = useRef({ player: 0, ai1: 0, ai2: 0 });
-  const aiRef = useRef([rollAI(), rollAI()]);
+  const aiRef = useRef([]);
+  const diffRef = useRef(difficulty);
   const mashRef = useRef({ boost: 0 });
   const winnerRef = useRef(null);
 
@@ -73,6 +115,7 @@ export default function RunningRaces() {
     const iv = setInterval(() => {
       const tickSec = TICK_MS / 1000;
       const p = posRef.current;
+      const diff = diffRef.current;
 
       mashRef.current.boost *= BOOST_DECAY;
       const playerSpeed = BASE_PLAYER_SPEED + mashRef.current.boost;
@@ -81,15 +124,17 @@ export default function RunningRaces() {
       // the human eases off, and one that's fallen far behind the human (not
       // behind other AIs) gets a mild nudge, so races stay close either way
       // without punishing a player who's mashing well and pulling ahead.
+      // Difficulty tunes how much slack an AI gets: Hard barely eases off
+      // and catches up hardest, so only sustained fast mashing keeps you ahead.
       const aiSpeeds = aiRef.current.map((ai, i) => {
         const laneKey = i === 0 ? 'ai1' : 'ai2';
         let speed = ai.base + Math.sin(Date.now() / 400 + ai.wobblePhase) * WOBBLE_AMPLITUDE;
         const gapToPlayer = p[laneKey] - p.player; // positive: AI ahead of player
-        if (gapToPlayer > RUBBERBAND_GAP) {
-          speed *= 0.75;
-        } else if (gapToPlayer < -RUBBERBAND_GAP) {
-          const behind = -gapToPlayer - RUBBERBAND_GAP;
-          speed *= 1 + Math.min(0.3, behind / 100);
+        if (gapToPlayer > diff.rubberGap) {
+          speed *= diff.easeOff;
+        } else if (gapToPlayer < -diff.rubberGap) {
+          const behind = -gapToPlayer - diff.rubberGap;
+          speed *= 1 + Math.min(diff.catchMax, behind / 100);
         }
         return speed;
       });
@@ -133,7 +178,8 @@ export default function RunningRaces() {
     posRef.current = { player: 0, ai1: 0, ai2: 0 };
     setPositions({ player: 0, ai1: 0, ai2: 0 });
     setAiChars(shuffle(CHARACTERS.filter(c => c.id !== runner.id)).slice(0, 2));
-    aiRef.current = [rollAI(), rollAI()];
+    diffRef.current = difficulty;
+    aiRef.current = [rollAI(difficulty), rollAI(difficulty)];
     mashRef.current = { boost: 0 };
     winnerRef.current = null;
     setWinner(null);
@@ -200,7 +246,17 @@ export default function RunningRaces() {
               <div className="rr-panel">
                 <div className="rr-panel-emoji">{runner.emoji}</div>
                 <h3>{runner.label} is ready!</h3>
-                <p className="rr-tip">Tap GO as fast as you can to win the race!</p>
+                <p className="rr-tip">Tap RUN as fast as you can to win the race!</p>
+                <div className="rr-diff-row">
+                  {DIFFICULTIES.map(d => (
+                    <button key={d.id}
+                            className={`rr-diff-btn${difficulty.id === d.id ? ' selected' : ''}`}
+                            onClick={() => setDifficulty(d)}>
+                      <span>{d.label}</span>
+                      <small>{d.desc}</small>
+                    </button>
+                  ))}
+                </div>
                 <div className="rr-btn-row">
                   <button className="btn btn-green" onClick={startRace}>🏁 Start Race!</button>
                   <button className="btn btn-orange" onClick={() => setPhase('select')}>🔄 Change Runner</button>
