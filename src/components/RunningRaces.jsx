@@ -183,6 +183,11 @@ export default function RunningRaces() {
     setPhase('ready');
   };
 
+  const changeRunner = () => {
+    setNameInput(playerName);
+    setPhase('name');
+  };
+
   const startRace = () => {
     posRef.current = { player: 0, ai1: 0, ai2: 0 };
     setPositions({ player: 0, ai1: 0, ai2: 0 });
@@ -250,7 +255,7 @@ export default function RunningRaces() {
         </div>
       )}
 
-      {phase !== 'select' && runner && (
+      {phase !== 'name' && phase !== 'select' && runner && (
         <div className="rr-arena">
           <div className="rr-track">
             <div className="rr-goalpost rr-goalpost-start">🚩</div>
@@ -280,7 +285,7 @@ export default function RunningRaces() {
                 </div>
                 <div className="rr-btn-row">
                   <button className="btn btn-green" onClick={startRace}>🏁 Start Race!</button>
-                  <button className="btn btn-orange" onClick={() => setPhase('select')}>🔄 Change Runner</button>
+                  <button className="btn btn-orange" onClick={changeRunner}>🔄 Change Runner</button>
                 </div>
               </div>
             </div>
@@ -327,7 +332,7 @@ export default function RunningRaces() {
                 <p className="rr-tally">🏆 Won {tally.wins} of {tally.races} race{tally.races === 1 ? '' : 's'}</p>
                 <div className="rr-btn-row">
                   <button className="btn btn-green" onClick={startRace}>🔁 Race Again!</button>
-                  <button className="btn btn-blue" onClick={() => setPhase('select')}>🔄 Change Runner</button>
+                  <button className="btn btn-blue" onClick={changeRunner}>🔄 Change Runner</button>
                 </div>
               </div>
             </div>

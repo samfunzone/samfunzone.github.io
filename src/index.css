@@ -1,7 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #ffecd2);
+  background: linear-gradient(135deg, #0d1b3e, #142a5c, #1e3a70);
   min-height: 100vh;
   overflow-x: hidden;
 }

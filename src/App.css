@@ -1174,7 +1174,7 @@
 .header h1 {
   font-size: clamp(2.2rem, 7vw, 4.5rem);
   color: #fff;
-  text-shadow: 4px 4px 0 #ff6b6b, 6px 6px 0 #ffa500;
+  text-shadow: 4px 4px 0 #3d5fd1, 6px 6px 0 #142a5c;
   animation: bounce 1.5s infinite;
   letter-spacing: 2px;
 }
@@ -1205,13 +1205,13 @@
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  background: rgba(255,255,255,.45);
-  color: #444;
+  background: rgba(255,255,255,.12);
+  color: #cfe0ff;
   transition: background .2s, transform .15s, box-shadow .15s;
-  box-shadow: 0 4px 0 rgba(0,0,0,.15);
+  box-shadow: 0 4px 0 rgba(0,0,0,.25);
 }
-.tab-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,.15); }
-.tab-btn.active { background: #fff; color: #ff6b6b; box-shadow: 0 4px 0 rgba(0,0,0,.2); }
+.tab-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,.25); background: #2c4a8c; }
+.tab-btn.active { background: #3d5fd1; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 
 /* Container */
 .container {
