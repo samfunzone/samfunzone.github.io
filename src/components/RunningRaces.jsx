@@ -74,13 +74,13 @@ function pointAtProgress(pct) {
 }
 
 /* ── One lane: zigzag track + progress fill + running character ── */
-function RaceLane({ pos, char, isPlayer, running }) {
+function RaceLane({ pos, char, label, isPlayer, running }) {
   const accent = char.color;
   const pt = pointAtProgress(pos);
   const fillLen = (pos / 100) * ZIGZAG_TOTAL_LEN;
   return (
     <div className={`rr-lane${isPlayer ? ' rr-lane-player' : ''}`}>
-      <div className="rr-lane-label">{isPlayer ? '⭐ You' : char.label}</div>
+      <div className="rr-lane-label">{isPlayer ? `⭐ ${label}` : label}</div>
       <svg viewBox="0 0 300 40" className="rr-lane-svg"
            style={{ '--rr-accent': accent, '--rr-accent-lt': lighten(accent, .6) }}>
         <path d={ZIGZAG_D} className="rr-zig-track" />
@@ -94,7 +94,9 @@ function RaceLane({ pos, char, isPlayer, running }) {
 }
 
 export default function RunningRaces() {
-  const [phase, setPhase] = useState('select'); // select | ready | countdown | racing | finish | results
+  const [phase, setPhase] = useState('name'); // name | select | ready | countdown | racing | finish | results
+  const [playerName, setPlayerName] = useState('');
+  const [nameInput, setNameInput] = useState('');
   const [runner, setRunner] = useState(null);
   const [difficulty, setDifficulty] = useState(DIFFICULTIES[1]);
   const [aiChars, setAiChars] = useState([]);
@@ -169,6 +171,13 @@ export default function RunningRaces() {
     return () => clearTimeout(t);
   }, [phase, count]);
 
+  const submitName = () => {
+    const trimmed = nameInput.trim();
+    if (!trimmed) return;
+    setPlayerName(trimmed);
+    setPhase('select');
+  };
+
   const pickCharacter = (char) => {
     setRunner(char);
     setPhase('ready');
@@ -213,6 +222,18 @@ export default function RunningRaces() {
     <div className="card card-blue">
       <h2>🏃 Running Races!</h2>
 
+      {phase === 'name' && (
+        <div className="rr-name-screen">
+          <p className="rr-select-tip">What's your name, racer?</p>
+          <form className="rr-name-form" onSubmit={e => { e.preventDefault(); submitName(); }}>
+            <input type="text" className="rr-name-input" value={nameInput}
+                   onChange={e => setNameInput(e.target.value)}
+                   placeholder="Type your name" maxLength={16} autoFocus />
+            <button type="submit" className="btn btn-green" disabled={!nameInput.trim()}>Let's Race! 🏁</button>
+          </form>
+        </div>
+      )}
+
       {phase === 'select' && (
         <div className="rr-select">
           <p className="rr-select-tip">Pick your runner!</p>
@@ -234,9 +255,9 @@ export default function RunningRaces() {
           <div className="rr-track">
             <div className="rr-goalpost rr-goalpost-start">🚩</div>
             <div className="rr-lanes">
-              <RaceLane pos={positions.player} char={runner} isPlayer running={phase === 'racing'} />
-              {aiChars[0] && <RaceLane pos={positions.ai1} char={aiChars[0]} running={phase === 'racing'} />}
-              {aiChars[1] && <RaceLane pos={positions.ai2} char={aiChars[1]} running={phase === 'racing'} />}
+              <RaceLane pos={positions.player} char={runner} label={playerName} isPlayer running={phase === 'racing'} />
+              {aiChars[0] && <RaceLane pos={positions.ai1} char={aiChars[0]} label={aiChars[0].label} running={phase === 'racing'} />}
+              {aiChars[1] && <RaceLane pos={positions.ai2} char={aiChars[1]} label={aiChars[1].label} running={phase === 'racing'} />}
             </div>
             <div className="rr-goalpost rr-goalpost-finish">🏁</div>
           </div>

@@ -3356,6 +3356,24 @@
   margin-bottom: 14px;
 }
 
+.rr-name-form {
+  display: flex;
+  gap: 10px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.rr-name-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #74c0fc;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-family: inherit;
+  outline: none;
+  background: #fff;
+}
+.rr-name-input:focus { border-color: #1c7ed6; box-shadow: 0 0 0 3px #d0ebff; }
+
 .rr-char-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -3657,6 +3675,7 @@
   .tl-extract-arena { min-height: 250px; gap: 4px; }
 
   /* Running Races */
+  .rr-name-form { flex-direction: column; }
   .rr-char-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .rr-char-emoji { font-size: 2rem; }
   .rr-goalpost { font-size: 1.5rem; }
