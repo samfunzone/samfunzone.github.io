@@ -13,6 +13,9 @@ dist
 # Freshly generated Tamil clips awaiting QA (see scripts/gen-tamil-clips.py);
 # promoted into public/audio/tamil/ only after human sign-off.
 scripts/tamil-clips-staging/
+# Clips cut from the row recordings (scripts/split-tamil-rows.py --markers);
+# regenerable from scripts/downloaded-from-internet/ + scripts/row-markers.json.
+scripts/row-split-staging/
 dist-ssr
 *.local
 

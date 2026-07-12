@@ -47,11 +47,11 @@ const compose = (m, u) => m.cons + u.sign;          // க + ா = கா
 const roman = (m, u) => m.tr + u.tr;                 // k + aa = kaa
 const rand = arr => arr[Math.floor(Math.random() * arr.length)];
 
-// ⚠️ SOUND TEMPORARILY DISABLED (see README "TODO"). The bundled clips / browser TTS
-// weren't accurate enough — short vs long vowels (குறில்/நெடில்) sounded identical and
-// the ங row was wrong. Sound is gated off until we source a better Tamil voice.
-// To re-enable: flip SOUND_ENABLED to true (and restore the 🔊 buttons + Listen & Find mode).
-const SOUND_ENABLED = false;
+// Clips are native-voice row recordings (downloaded whole, then split into
+// per-syllable MP3s by scripts/split-tamil-rows.py from human-verified marker
+// times — see scripts/marker-qa.html). Flip to false to gate all audio off
+// again (also re-hide the 🔊 buttons + Listen & Find mode).
+const SOUND_ENABLED = true;
 
 // Map every Tamil glyph the game can speak → its bundled audio clip (public/audio/tamil/).
 // Clips fall back to browser TTS if one is missing. Kept wired up for the re-enable.
@@ -63,7 +63,7 @@ MEY.forEach((m, ci) => {
   UYIR.forEach((u, vi) => SOUND.set(compose(m, u), `ta_c${ci}_v${vi}.mp3`)); // 216 உயிர்மெய்
 });
 const say = text => {
-  if (!SOUND_ENABLED) return;                                       // sound off for now
+  if (!SOUND_ENABLED) return;
   const clip = SOUND.get(text);
   if (clip) playClip(AUDIO_BASE + clip, text);
   else speak(text);
@@ -76,7 +76,7 @@ export default function TamilLetters() {
   if (mode === 'learn')   return <LearnMode   onBack={back} />;
   if (mode === 'mix')     return <MixMode     onBack={back} />;
   if (mode === 'extract') return <ExtractMode onBack={back} />;
-  if (mode === 'listen')  return <ListenMode  onBack={back} />; // unreachable while Listen & Find is disabled (sound off)
+  if (mode === 'listen')  return <ListenMode  onBack={back} />;
   return <StartScreen onPick={setMode} />;
 }
 
@@ -85,8 +85,7 @@ const MODES = [
   { id: 'learn',   emoji: '📖', title: 'Learn Grid',   sub: 'See how a consonant + vowel build a letter',    color: '#8b5cf6' },
   { id: 'mix',     emoji: '🧪', title: 'Mix It!',      sub: 'Join a consonant + vowel to make a letter',     color: '#f59e0b' },
   { id: 'extract', emoji: '🔍', title: 'Extract It!',  sub: 'Split a letter into its vowel and consonant',   color: '#3b82f6' },
-  // 👂 Listen & Find is disabled while sound is off — it depends entirely on audio. See README "TODO".
-  // { id: 'listen', emoji: '👂', title: 'Listen & Find',  sub: 'Hear a letter, then tap the right one',      color: '#10b981' },
+  { id: 'listen',  emoji: '👂', title: 'Listen & Find', sub: 'Hear a letter, then tap the right one',        color: '#10b981' },
 ];
 
 function StartScreen({ onPick }) {
@@ -131,8 +130,7 @@ function LearnMode({ onBack }) {
             <span className="tl-bd-piece">{sel.u.base}</span>
             <span className="tl-bd-op">=</span>
             <span key={compose(sel.m, sel.u)} className="tl-bd-answer">{compose(sel.m, sel.u)}</span>
-            {/* 🔊 button hidden while sound is disabled — see README "TODO".
-            <button className="tl-bd-say" onClick={() => say(compose(sel.m, sel.u))} aria-label="Hear it">🔊</button> */}
+            <button className="tl-bd-say" onClick={() => say(compose(sel.m, sel.u))} aria-label="Hear it">🔊</button>
             <span className="tl-bd-roman">{roman(sel.m, sel.u)}</span>
           </>
         ) : (
@@ -292,7 +290,9 @@ function MixMode({ onBack }) {
       <div className="tl-options">
         {q.options.map(opt => {
           let cls = 'tl-option';
-          if (status !== 'asking' && opt === correct) cls += ' tl-opt-right';
+          // Only highlight the answer on a correct pick — a wrong guess just
+          // shakes red, so the kid still has to find the right letter.
+          if (status === 'right' && opt === correct) cls += ' tl-opt-right';
           else if (status === 'wrong' && opt === picked) cls += ' tl-opt-wrong';
           return (
             <button key={opt} className={cls} disabled={status === 'right'} onClick={() => choose(opt)}>
@@ -413,7 +413,7 @@ function ListenMode({ onBack }) {
 
       <div className="tl-options tl-options-six">
         {q.options.map(opt => {
-          const reveal = status !== 'asking' && opt === q.target;
+          const reveal = status === 'right' && opt === q.target;
           let cls = 'tl-option';
           if (reveal) cls += ' tl-opt-right';
           else if (status === 'wrong' && opt === picked) cls += ' tl-opt-wrong';
@@ -539,12 +539,14 @@ function ExtractMode({ onBack }) {
 
   function tapU(idx) {
     if (status !== 'asking') return;
+    say(UYIR[q.uyirOpts[idx]].base); // sound out the tapped vowel
     setSelU(idx);
     if (selM !== null) doCheck(idx, selM);
   }
 
   function tapM(idx) {
     if (status !== 'asking') return;
+    say(MEY[q.meyOpts[idx]].pulli); // sound out the tapped consonant
     setSelM(idx);
     if (selU !== null) doCheck(selU, idx);
   }
@@ -554,6 +556,7 @@ function ExtractMode({ onBack }) {
     const mc = q.meyOpts[mIdx]  === q.mi;
     if (uc && mc) {
       setStatus('right');
+      say(compose(q.m, q.u)); // celebrate with the full letter (cancels the tile clip)
       const pts = Math.max(100 - wrongs * 25, 25) + streak * 10;
       setScore(s => s + pts);
       setStreak(k => k + 1);
@@ -656,6 +659,7 @@ function ExtractMode({ onBack }) {
           <div ref={centerRef} className={`tl-extract-target${status === 'right' ? ' tl-merge' : ''}`}>
             {compose(q.m, q.u)}
           </div>
+          <button className="tl-bd-say" onClick={() => say(compose(q.m, q.u))} aria-label="Hear the letter">🔊</button>
           {gain && gain.key === round && <span key={gain.key} className="tl-gain">+{gain.pts}</span>}
           <div className="tl-extract-bkdn">
             {status === 'right'

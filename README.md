@@ -23,20 +23,10 @@ A colorful, interactive React app built for kids — packed with games, creative
 | 🔍 Word Search | Find hidden words in a letter grid — 4 themes × 3 sizes (easy 8×8 across/down, medium 10×10 +diagonals, hard 12×12 all 8 directions incl. backwards). Drag to select; hints and star ratings |
 | 🔤 Unscramble | Rearrange scrambled letters into the right word — 4 categories, 8 rounds shortest→longest, two-level hints (emoji, then ghost first letter), streak scoring |
 | ✏️ Doodle Dance | Freeform doodle activity with playful animated flourishes |
-| அ Tamil Tango | Learn the Tamil alphabet — a classroom in disguise. Two modes: **Learn Grid** (tap any of the 216 உயிர்மெய் cells to see how a consonant + vowel combine, e.g. க் + ஆ = கா → "kaa") and **Mix It!** (join a consonant + vowel to build the right letter; look-alike distractors reinforce the vowel signs). Every letter shows its romanized spelling. _Sound is currently disabled — see TODO below._ |
+| அ Tamil Tango | Learn the Tamil alphabet — a classroom in disguise. Four modes: **Learn Grid** (tap any of the 216 உயிர்மெய் cells to see how a consonant + vowel combine, e.g. க் + ஆ = கா → "kaa"), **Mix It!** (join a consonant + vowel to build the right letter; look-alike distractors reinforce the vowel signs), **Extract It!** (split a letter back into its parts), and **Listen & Find** (hear a letter, tap the right one). Every letter shows its romanized spelling and speaks with native-voice clips (`public/audio/tamil/`, cut from row recordings by `scripts/split-tamil-rows.py`) |
 | 🏃 Running Races | Tap-to-mash race against 2 AI runners along a zigzag track — pick a name, choose from 12 characters, and race at easy/medium/hard difficulty; rubberband AI keeps it close either way |
 
 > Whack-a-Mole, Magic Loops, and Enchanted Garden exist in `src/components/` but are currently disabled (not in the `TABS` array).
-
-## TODO
-
-- **Tamil Tango — restore sound.** Audio is disabled for now: both the browser TTS and the
-  pre-generated clips in `public/audio/tamil/` pronounced letters poorly — short vs long vowels
-  (குறில்/நெடில், e.g. க vs கா, கி vs கீ) were indistinguishable and the whole ங row was wrong.
-  Once a better Tamil voice / recorded letter set is sourced, replace those clips, flip
-  `SOUND_ENABLED` back to `true` in `src/components/TamilLetters.jsx`, restore the 🔊 buttons,
-  and re-enable the **Listen & Find** mode (commented out in the `MODES` array — it depends
-  entirely on audio).
 
 ## Getting Started
 
