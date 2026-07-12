@@ -517,7 +517,9 @@ function ExtractMode({ onBack }) {
   useLayoutEffect(() => {
     const arena  = arenaRef.current;
     const center = centerRef.current;
-    if (!arena || !center) { setArrows({ u: null, m: null }); return; }
+    // No setState here: when refs are null the arena isn't rendered, so stale
+    // arrows paint nothing, and the effect re-runs on selU/selM/round anyway.
+    if (!arena || !center) return;
     const ar = arena.getBoundingClientRect();
     const cr = center.getBoundingClientRect();
     const cx  = cr.left - ar.left + cr.width / 2;
@@ -531,8 +533,9 @@ function ExtractMode({ onBack }) {
       const r = mRefs.current[selM].getBoundingClientRect();
       mArr = { x1: cx + cr.width / 2 + 2, y1: cyt, x2: r.left - ar.left - 2,  y2: r.top - ar.top + r.height / 2 };
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- DOM measurement, see react.dev/learn/you-might-not-need-an-effect#measuring-layout
     setArrows({ u: uArr, m: mArr });
-  }, [selU, selM, round]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selU, selM, round]);
 
   function tapU(idx) {
     if (status !== 'asking') return;
