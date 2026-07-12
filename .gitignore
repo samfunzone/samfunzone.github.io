@@ -9,6 +9,10 @@ lerna-debug.log*
 
 node_modules
 dist
+
+# Freshly generated Tamil clips awaiting QA (see scripts/gen-tamil-clips.py);
+# promoted into public/audio/tamil/ only after human sign-off.
+scripts/tamil-clips-staging/
 dist-ssr
 *.local
 

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tamil clip QA — listen &amp; sign off</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 20px; background: #0f1b33; color: #eef2ff; }
+  h1 { font-size: 1.3rem; } h2 { font-size: 1.05rem; margin: 26px 0 8px; color: #9fb4e8; }
+  .note { color: #9fb4e8; font-size: .9rem; max-width: 60rem; }
+  .pairs .row { margin: 6px 0; }
+  button { font-size: 1.15rem; padding: 6px 12px; margin: 3px; border-radius: 10px; border: 1px solid #3b4d7a;
+           background: #1c2c52; color: #eef2ff; cursor: pointer; font-family: inherit; }
+  button:hover { background: #2a3e6e; }
+  button.playing { background: #4169e1; border-color: #7aa2ff; }
+  button.err { background: #6e2a2a; border-color: #ff7a7a; }
+  small { display: block; font-size: .65rem; color: #9fb4e8; }
+  table { border-collapse: collapse; }
+  td, th { padding: 1px; }
+  th button { background: #24365f; }
+  select { font-size: 1rem; padding: 4px 8px; border-radius: 8px; }
+  .legend { margin: 4px 0 0; }
+</style>
+</head>
+<body>
+<h1>🔊 Tamil Tango clip QA</h1>
+<p class="note">
+  Open this file directly (<code>file://</code> is fine). Every button plays its clip.
+  <b>Sign-off gate:</b> each minimum pair below must sound audibly <i>different</i> and <i>correct</i>
+  — especially short vs long vowels — and the whole ங row must sound like “nga”, not “ga” or gibberish.
+  Also check ழ (retroflex “zh”, often mispronounced as plain “l”).
+</p>
+<p>
+  Clip set:
+  <select id="base">
+    <option value="tamil-clips-staging/">staging (newly generated)</option>
+    <option value="../public/audio/tamil/">shipped (public/audio/tamil)</option>
+  </select>
+</p>
+
+<h2>⚖️ Minimum pairs (the quality bar)</h2>
+<div class="pairs" id="pairs"></div>
+
+<h2>உயிர் — 12 vowels (ta_v*)</h2>
+<div id="vowels"></div>
+
+<h2>மெய் — 18 consonants, pulli sound (ta_m*)</h2>
+<div id="cons"></div>
+
+<h2>உயிர்மெய் — full 18×12 grid (ta_c*_v*)</h2>
+<table id="grid"></table>
+
+<script>
+// Copied verbatim from src/components/TamilLetters.jsx — order defines filenames.
+const UYIR = [
+  { base: 'அ', sign: '',  tr: 'a' },  { base: 'ஆ', sign: 'ா', tr: 'aa' },
+  { base: 'இ', sign: 'ி', tr: 'i' },  { base: 'ஈ', sign: 'ீ', tr: 'ee' },
+  { base: 'உ', sign: 'ு', tr: 'u' },  { base: 'ஊ', sign: 'ூ', tr: 'oo' },
+  { base: 'எ', sign: 'ெ', tr: 'e' },  { base: 'ஏ', sign: 'ே', tr: 'ae' },
+  { base: 'ஐ', sign: 'ை', tr: 'ai' }, { base: 'ஒ', sign: 'ொ', tr: 'o' },
+  { base: 'ஓ', sign: 'ோ', tr: 'oa' }, { base: 'ஔ', sign: 'ௌ', tr: 'au' },
+];
+const MEY = [
+  { pulli: 'க்', cons: 'க', tr: 'k' },  { pulli: 'ங்', cons: 'ங', tr: 'ng' },
+  { pulli: 'ச்', cons: 'ச', tr: 'ch' }, { pulli: 'ஞ்', cons: 'ஞ', tr: 'nj' },
+  { pulli: 'ட்', cons: 'ட', tr: 't' },  { pulli: 'ண்', cons: 'ண', tr: 'N' },
+  { pulli: 'த்', cons: 'த', tr: 'th' }, { pulli: 'ந்', cons: 'ந', tr: 'nh' },
+  { pulli: 'ப்', cons: 'ப', tr: 'p' },  { pulli: 'ம்', cons: 'ம', tr: 'm' },
+  { pulli: 'ய்', cons: 'ய', tr: 'y' },  { pulli: 'ர்', cons: 'ர', tr: 'r' },
+  { pulli: 'ல்', cons: 'ல', tr: 'l' },  { pulli: 'வ்', cons: 'வ', tr: 'v' },
+  { pulli: 'ழ்', cons: 'ழ', tr: 'zh' }, { pulli: 'ள்', cons: 'ள', tr: 'L' },
+  { pulli: 'ற்', cons: 'ற', tr: 'R' },  { pulli: 'ன்', cons: 'ன', tr: 'n' },
+];
+const compose = (ci, vi) => MEY[ci].cons + UYIR[vi].sign;
+const baseSel = document.getElementById('base');
+let current = null;
+
+function playBtn(label, file, sub) {
+  const b = document.createElement('button');
+  b.innerHTML = label + (sub ? `<small>${sub}</small>` : '');
+  b.onclick = () => {
+    if (current) current.pause();
+    const a = new Audio(baseSel.value + file);
+    current = a;
+    b.classList.remove('err');
+    b.classList.add('playing');
+    a.onended = () => b.classList.remove('playing');
+    a.onerror = () => { b.classList.remove('playing'); b.classList.add('err'); b.title = 'clip failed to load: ' + file; };
+    a.play().catch(() => { b.classList.remove('playing'); b.classList.add('err'); });
+  };
+  return b;
+}
+
+// Minimum pairs: short/long vowel pairs on the க row, the full ங row, the ழ row.
+const pairsEl = document.getElementById('pairs');
+[[0, 1], [2, 3], [4, 5], [6, 7], [9, 10]].forEach(([a, b]) => {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.append(
+    playBtn(compose(0, a), `ta_c0_v${a}.mp3`, 'k' + UYIR[a].tr),
+    ' vs ',
+    playBtn(compose(0, b), `ta_c0_v${b}.mp3`, 'k' + UYIR[b].tr),
+  );
+  pairsEl.append(row);
+});
+[[1, 'ங row — must be “nga”'], [14, 'ழ row — retroflex “zh”, not “l”']].forEach(([ci, label]) => {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.append(label + ': ');
+  UYIR.forEach((u, vi) => row.append(playBtn(compose(ci, vi), `ta_c${ci}_v${vi}.mp3`, MEY[ci].tr + u.tr)));
+  pairsEl.append(row);
+});
+
+const vowEl = document.getElementById('vowels');
+UYIR.forEach((u, vi) => vowEl.append(playBtn(u.base, `ta_v${vi}.mp3`, u.tr)));
+
+const conEl = document.getElementById('cons');
+MEY.forEach((m, ci) => conEl.append(playBtn(m.pulli, `ta_m${ci}.mp3`, m.tr)));
+
+const grid = document.getElementById('grid');
+const head = document.createElement('tr');
+head.append(document.createElement('th'));
+UYIR.forEach((u, vi) => {
+  const th = document.createElement('th');
+  th.append(playBtn(u.base, `ta_v${vi}.mp3`, u.tr));
+  head.append(th);
+});
+grid.append(head);
+MEY.forEach((m, ci) => {
+  const tr = document.createElement('tr');
+  const th = document.createElement('th');
+  th.append(playBtn(m.pulli, `ta_m${ci}.mp3`, m.tr));
+  tr.append(th);
+  UYIR.forEach((u, vi) => {
+    const td = document.createElement('td');
+    td.append(playBtn(compose(ci, vi), `ta_c${ci}_v${vi}.mp3`, m.tr + u.tr));
+    tr.append(td);
+  });
+  grid.append(tr);
+});
+</script>
+</body>
+</html>
