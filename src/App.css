@@ -3574,6 +3574,331 @@
   .rr-zig-fill { transition: none; }
 }
 
+/* ── Driving Cars ── */
+.drive-select-tip {
+  text-align: center;
+  font-weight: 700;
+  color: #555;
+  margin: 14px 0 10px;
+}
+
+.drive-dest-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.drive-dest-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px;
+  border: 3px solid rgba(255,255,255,.7);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s;
+}
+.drive-dest-card:hover { transform: translateY(-3px); border-color: #fff; }
+.drive-dest-card:active { transform: scale(.96); }
+.drive-dest-emoji { font-size: 2.2rem; }
+.drive-dest-label { font-weight: 800; font-size: .9rem; color: #333; text-shadow: 0 1px 2px rgba(255,255,255,.6); }
+
+.drive-arena {
+  position: relative;
+}
+
+/* First-person dashboard scene: sky/destination up top, perspective road
+   filling most of the view, and a HUD overlay (gauges + steering wheel)
+   overlapping the bottom of the road like a real car's windscreen/dash. */
+.drive-dash-scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,.15);
+}
+
+.drive-sky {
+  position: relative;
+  height: 110px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: hidden;
+  transition: background .3s;
+}
+
+.drive-destination-marker {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  font-size: 2.4rem;
+  transition: transform .1s linear;
+}
+
+.drive-road-view {
+  position: relative;
+  height: 340px;
+  background: linear-gradient(180deg, #bfe3c0, #8fbf8a);
+  overflow: hidden;
+  transition: box-shadow .15s;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.drive-road-view:active { cursor: grabbing; }
+.drive-road-view.drive-offroad {
+  animation: driveOffroadPulse .6s ease-in-out infinite;
+}
+
+.drive-road-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.drive-road-center {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 5;
+  stroke-dasharray: 14 16;
+  opacity: .85;
+}
+
+.drive-steer-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.3);
+  pointer-events: none;
+  animation: driveHintFade 2.6s ease-in-out infinite;
+}
+
+/* The whole HUD sits over the bottom of the road view, like looking down
+   at the dash/wheel through a windscreen — it does not push the road up. */
+.drive-hud-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* The dash "hood" overlaps the lower part of the road; gauges sit low in
+   the dash to each side, and the wheel rises up over its top edge, as if
+   seen from the driver's seat. */
+.drive-dashboard {
+  width: 100%;
+  height: 150px;
+  background: linear-gradient(180deg, rgba(43,47,54,.85), rgba(26,29,34,.96));
+  border-radius: 60px 60px 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 16px 16px;
+  pointer-events: auto;
+}
+
+.drive-gauge {
+  flex: 1 1 0;
+  max-width: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.drive-gauge-right { align-items: flex-end; }
+.drive-gauge-label { color: #f1f3f5; font-size: .72rem; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+.drive-gauge-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,.18);
+  overflow: hidden;
+}
+.drive-gauge-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width .1s linear;
+}
+.drive-gauge-fill-speed { background: linear-gradient(90deg, #51cf66, #ffd43b, #ff6b6b); }
+.drive-gauge-fill-progress { background: linear-gradient(90deg, #4fc3f7, #1c7ed6); }
+
+.drive-wheel-wrap {
+  flex: 0 0 auto;
+  margin-top: -78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.drive-wheel {
+  width: 200px;
+  height: 200px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  border-radius: 50%;
+  box-shadow: 0 6px 14px rgba(0,0,0,.4);
+}
+.drive-wheel:active { cursor: grabbing; }
+.drive-wheel-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.drive-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.6);
+  border-radius: 18px;
+}
+
+.drive-panel {
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px 26px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,.15);
+  max-width: 340px;
+}
+.drive-panel-emoji { font-size: 2.6rem; margin-bottom: 6px; }
+.drive-tip { color: #666; font-size: .9rem; margin: 8px 0 14px; }
+.drive-tally { color: #888; font-size: .85rem; margin-top: 6px; }
+
+.drive-trophy { font-size: 3.2rem; animation: driveTrophyPop .5s ease-out; }
+.drive-trophy-dim { opacity: .7; }
+
+.drive-win-line, .drive-lose-line { color: #666; margin: 6px 0 14px; }
+
+.drive-diff-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 4px 0 10px;
+}
+
+.drive-diff-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 800;
+  color: #555;
+  transition: border-color .15s, background .15s;
+}
+.drive-diff-btn small { font-weight: 600; color: #999; font-size: .7rem; }
+.drive-diff-btn.selected { border-color: #1c7ed6; background: #e7f5ff; color: #1c7ed6; }
+.drive-diff-btn.selected small { color: #1c7ed6; }
+
+.drive-btn-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.drive-countdown {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #1c7ed6;
+  text-shadow: 0 2px 0 #fff;
+  animation: driveCountIn .6s ease-out;
+}
+
+.drive-pedals-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.drive-pedal {
+  width: 130px;
+  height: 90px;
+  border-radius: 16px;
+  border: none;
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.3;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform .06s, box-shadow .06s;
+}
+.drive-pedal-gas {
+  background: radial-gradient(circle at 35% 30%, #69db7c, #2f9e44);
+  box-shadow: 0 6px 0 #2b8a3e, 0 8px 16px rgba(0,0,0,.2);
+}
+.drive-pedal-gas:active {
+  transform: translateY(4px) scale(.97);
+  box-shadow: 0 2px 0 #2b8a3e, 0 4px 10px rgba(0,0,0,.2);
+}
+.drive-pedal-brake {
+  background: radial-gradient(circle at 35% 30%, #ff8787, #e03131);
+  box-shadow: 0 6px 0 #c92a2a, 0 8px 16px rgba(0,0,0,.2);
+}
+.drive-pedal-brake:active {
+  transform: translateY(4px) scale(.97);
+  box-shadow: 0 2px 0 #c92a2a, 0 4px 10px rgba(0,0,0,.2);
+}
+
+@keyframes driveOffroadPulse {
+  0%, 100% { box-shadow: inset 0 0 0 4px rgba(230,57,70,.35); }
+  50% { box-shadow: inset 0 0 0 4px rgba(230,57,70,.75); }
+}
+
+@keyframes driveHintFade {
+  0%, 100% { opacity: .55; }
+  50% { opacity: 1; }
+}
+
+@keyframes driveCountIn {
+  0% { transform: scale(.4); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes driveTrophyPop {
+  0% { transform: scale(.3) rotate(-15deg); opacity: 0; }
+  70% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drive-road-view.drive-offroad { animation: none; box-shadow: inset 0 0 0 4px rgba(230,57,70,.6); }
+  .drive-countdown { animation: none; }
+  .drive-trophy { animation: none; }
+  .drive-gauge-fill { transition: none; }
+  .drive-destination-marker { transition: none; }
+  .drive-steer-hint { animation: none; opacity: .85; }
+}
+
 /* ── Mobile responsive ── */
 @media (max-width: 600px) {
   .header { padding: 18px 12px 10px; }
@@ -3682,4 +4007,20 @@
   .rr-panel { padding: 16px 18px; }
   .rr-diff-btn { padding: 6px 9px; }
   .rr-mash-btn { width: 116px; height: 116px; font-size: 1.15rem; }
+
+  /* Driving Cars */
+  .drive-dest-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .drive-dest-emoji { font-size: 1.9rem; }
+  .drive-panel { padding: 16px 18px; }
+  .drive-diff-btn { padding: 6px 9px; }
+  .drive-sky { height: 80px; }
+  .drive-destination-marker { font-size: 1.9rem; }
+  .drive-road-view { height: 280px; }
+  .drive-dashboard { height: 118px; border-radius: 44px 44px 0 0; padding: 0 10px 12px; gap: 6px; }
+  .drive-gauge { max-width: 90px; }
+  .drive-gauge-label { font-size: .62rem; }
+  .drive-wheel { width: 130px; height: 130px; }
+  .drive-wheel-wrap { margin-top: -50px; }
+  .drive-steer-hint { font-size: .7rem; padding: 2px 8px; }
+  .drive-pedal { width: 108px; height: 78px; font-size: .92rem; }
 }
