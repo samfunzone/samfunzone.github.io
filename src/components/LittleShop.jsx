@@ -90,17 +90,26 @@ function Coin({ id }) {
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
       <defs>
         <radialGradient id={`shop-coin-${id}`} cx="35%" cy="30%" r="80%">
-          <stop offset="0%" stopColor={lighten(c, 0.5)} />
+          <stop offset="0%" stopColor={lighten(c, 0.55)} />
           <stop offset="55%" stopColor={c} />
-          <stop offset="100%" stopColor={darken(c, 0.3)} />
+          <stop offset="100%" stopColor={darken(c, 0.35)} />
+        </radialGradient>
+        <radialGradient id={`shop-coin-face-${id}`} cx="40%" cy="35%" r="75%">
+          <stop offset="0%" stopColor={lighten(c, 0.35)} />
+          <stop offset="70%" stopColor={c} />
+          <stop offset="100%" stopColor={darken(c, 0.18)} />
         </radialGradient>
       </defs>
       <circle cx={r} cy={r} r={r - 1} fill={`url(#shop-coin-${id})`} />
-      <circle cx={r} cy={r} r={r - 2.5} fill="none" stroke={darken(c, 0.25)}
-        strokeWidth="1.5" strokeDasharray="2 2.5" />
-      <circle cx={r} cy={r} r={r - 6} fill="none" stroke={lighten(c, 0.3)} strokeWidth="1" />
+      <circle cx={r} cy={r} r={r - 2.2} fill="none" stroke={darken(c, 0.3)}
+        strokeWidth="1.6" strokeDasharray="1.6 2.2" />
+      <circle cx={r} cy={r} r={r - 5.5} fill={`url(#shop-coin-face-${id})`}
+        stroke={darken(c, 0.22)} strokeWidth="0.8" />
+      <circle cx={r} cy={r} r={r - 7} fill="none" stroke={lighten(c, 0.35)} strokeWidth="0.8" />
+      <ellipse cx={size * 0.38} cy={size * 0.3} rx={r * 0.4} ry={r * 0.24}
+        fill="#ffffff" opacity="0.4" />
       <text x={r} y={r + 4.5} textAnchor="middle" fontSize={r * 0.55} fontWeight="800"
-        fill={darken(c, 0.45)}>{DENOM[id].label}</text>
+        fill={darken(c, 0.5)}>{DENOM[id].label}</text>
     </svg>
   );
 }
@@ -116,21 +125,38 @@ function Bill({ id }) {
     <svg width="76" height="36" viewBox="0 0 76 36" aria-hidden="true">
       <defs>
         <linearGradient id={`shop-bill-${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={lighten(c, 0.25)} />
+          <stop offset="0%" stopColor={lighten(c, 0.28)} />
           <stop offset="50%" stopColor={c} />
-          <stop offset="100%" stopColor={darken(c, 0.2)} />
+          <stop offset="100%" stopColor={darken(c, 0.22)} />
         </linearGradient>
+        <radialGradient id={`shop-bill-oval-${id}`} cx="40%" cy="35%" r="80%">
+          <stop offset="0%" stopColor={lighten(c, 0.45)} />
+          <stop offset="100%" stopColor={lighten(c, 0.1)} />
+        </radialGradient>
       </defs>
       <rect x="1" y="1" width="74" height="34" rx="4" fill={`url(#shop-bill-${id})`}
-        stroke={darken(c, 0.35)} strokeWidth="1.5" />
-      <rect x="5" y="5" width="66" height="26" rx="2" fill="none"
-        stroke={lighten(c, 0.35)} strokeWidth="1" strokeDasharray="3 2" />
-      <ellipse cx="38" cy="18" rx="12" ry="10" fill={lighten(c, 0.2)}
-        stroke={darken(c, 0.25)} strokeWidth="1" />
-      <text x="38" y="23" textAnchor="middle" fontSize="12" fontWeight="800"
+        stroke={darken(c, 0.4)} strokeWidth="1.5" />
+      <rect x="4.5" y="4.5" width="67" height="27" rx="2" fill="none"
+        stroke={lighten(c, 0.4)} strokeWidth="1" strokeDasharray="3 2" />
+      {/* corner rosettes */}
+      {[[8, 8], [68, 8], [8, 28], [68, 28]].map(([x, y]) => (
+        <g key={`${x}-${y}`}>
+          <circle cx={x} cy={y} r="3.4" fill={lighten(c, 0.25)} stroke={darken(c, 0.3)} strokeWidth="0.7" />
+          <circle cx={x} cy={y} r="1.6" fill="none" stroke={darken(c, 0.25)} strokeWidth="0.6" />
+        </g>
+      ))}
+      {/* portrait oval + guilloche ring */}
+      <ellipse cx="38" cy="18" rx="12.5" ry="10.5" fill="none"
+        stroke={darken(c, 0.28)} strokeWidth="1.4" strokeDasharray="1.2 1.2" />
+      <ellipse cx="38" cy="18" rx="11" ry="9" fill={`url(#shop-bill-oval-${id})`}
+        stroke={darken(c, 0.25)} strokeWidth="0.9" />
+      <text x="38" y="22.5" textAnchor="middle" fontSize="11.5" fontWeight="800"
         fill={darken(c, 0.5)}>{label}</text>
-      <text x="10" y="12" fontSize="7" fontWeight="700" fill={darken(c, 0.4)}>{label}</text>
-      <text x="60" y="30" fontSize="7" fontWeight="700" fill={darken(c, 0.4)}>{label}</text>
+      <text x="15" y="14" textAnchor="middle" fontSize="7" fontWeight="700" fill={darken(c, 0.45)}>{label}</text>
+      <text x="61" y="27" textAnchor="middle" fontSize="7" fontWeight="700" fill={darken(c, 0.45)}>{label}</text>
+      {/* microprint + sheen */}
+      <line x1="24" y1="31.5" x2="52" y2="31.5" stroke={darken(c, 0.3)} strokeWidth="0.8" strokeDasharray="1 1" />
+      <rect x="2" y="2" width="72" height="7" rx="3" fill="#ffffff" opacity="0.14" />
     </svg>
   );
 }
@@ -350,6 +376,13 @@ export default function LittleShop() {
     return (
       <div className="card card-orange">
         <div className="shop-won">
+          {['💵', '🪙', '🛍️', '⭐', '💰', '🧾'].map((e, i) => (
+            <span key={i} className="shop-float" style={{
+              left: `${8 + i * 16}%`,
+              animationDelay: `${i * 0.7}s`,
+              animationDuration: `${3.2 + (i % 3) * 0.9}s`,
+            }}>{e}</span>
+          ))}
           <div className="shop-won-title">🔔 CLOSING TIME!</div>
           <div className="shop-won-score" style={{ borderColor: level.color }}>⭐ {score}</div>
           <div className="shop-stars">{'★'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
@@ -396,7 +429,8 @@ export default function LittleShop() {
     : 'Thank you! See you soon! 💖';
 
   return (
-    <div className="card card-orange" style={{ '--shop-accent': level.color }}>
+    <div className="card card-orange shop-card" style={{ '--shop-accent': level.color }}>
+      <div className="shop-awning" aria-hidden="true" />
       <div className="shop-top">
         <span className="shop-level-pill">{level.emoji} {level.label}</span>
         <div className="shop-top-right">

@@ -4025,6 +4025,22 @@
 .shop-lc-name { font-weight: 800; margin-top: 6px; color: #1e293b; }
 .shop-lc-desc { font-size: 0.78rem; color: #64748b; margin-top: 5px; line-height: 1.35; }
 
+/* storefront awning across the top of the play card */
+.shop-card { position: relative; overflow: hidden; padding-top: 52px; }
+.shop-awning {
+  position: absolute; top: 0; left: 0; right: 0; height: 26px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.3), rgba(0,0,0,.06)),
+    repeating-linear-gradient(90deg, #ef4444 0 24px, #fdf6ec 24px 48px);
+}
+.shop-awning::after {
+  content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 12px;
+  background-image:
+    radial-gradient(circle at 12px 0, #e64545 0 11px, rgba(0,0,0,0) 12px),
+    radial-gradient(circle at 36px 0, #fdf6ec 0 11px, rgba(0,0,0,0) 12px);
+  background-size: 48px 12px; background-repeat: repeat-x;
+}
+
 .shop-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .shop-level-pill {
   background: color-mix(in srgb, var(--shop-accent) 16%, #ffffff);
@@ -4037,7 +4053,10 @@
 
 .shop-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; }
 .shop-dot { width: 10px; height: 10px; border-radius: 50%; background: #e2e8f0; transition: background .2s; }
-.shop-dot-active { outline: 2px solid var(--shop-accent); outline-offset: 2px; }
+.shop-dot-active {
+  outline: 2px solid var(--shop-accent); outline-offset: 2px;
+  animation: shopDotPulse 1.6s ease-in-out infinite;
+}
 .shop-dot-done { background: #22c55e; }
 .shop-dot-miss { background: #f59e0b; }
 
@@ -4045,12 +4064,23 @@
   display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
   position: relative; min-height: 64px;
 }
-.shop-customer { font-size: 3rem; animation: shopCustomerIn .5s ease backwards; }
+.shop-customer {
+  font-size: 3rem;
+  animation: shopCustomerIn .5s ease backwards, shopCustomerBob 3s ease-in-out .5s infinite;
+}
 .shop-customer-happy { animation: shopCheerJump .6s ease; }
 .shop-bubble {
-  background: #ffffff; border: 2px solid #cbd5e1; border-radius: 16px 16px 16px 4px;
-  padding: 10px 14px; font-weight: 600; color: #334155; flex: 1;
+  position: relative; flex: 1;
+  background: linear-gradient(180deg, #ffffff, #f1f5f9);
+  border: 2px solid #cbd5e1; border-radius: 16px;
+  padding: 10px 14px 10px 18px; font-weight: 600; color: #334155;
+  box-shadow: 0 3px 10px rgba(15,23,42,.08);
   animation: shopPop .3s ease backwards;
+}
+.shop-bubble::after {
+  content: ''; position: absolute; left: -8px; top: 22px; width: 12px; height: 12px;
+  background: #ffffff; border-left: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1;
+  transform: rotate(45deg);
 }
 .shop-bub-item { font-size: 1.3rem; margin: 0 2px; }
 .shop-bub-qty { font-size: 1.05rem; color: #7c3aed; }
@@ -4070,16 +4100,25 @@
 .shop-stage { display: flex; gap: 14px; align-items: flex-start; }
 .shop-shelf {
   flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-  background: linear-gradient(180deg, #b98a5a, #8b5e34);
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,0) 0 34px, rgba(62,39,17,.25) 34px 36px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 3px, rgba(0,0,0,0) 3px 46px),
+    linear-gradient(180deg, #c39463, #8b5e34);
   border: 3px solid #6f4a28; border-radius: 14px; padding: 12px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,.28), inset 0 -2px 4px rgba(255,255,255,.12);
 }
 .shop-item {
-  position: relative; background: linear-gradient(180deg, #fff8ec, #ffe9c7);
+  position: relative;
+  background: linear-gradient(180deg, #fffdf7, #ffedcb 70%, #f7ddad);
   border: 2px solid #e8c48a; border-radius: 12px; padding: 8px 4px 6px;
   cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  transition: transform .12s;
+  box-shadow: 0 3px 6px rgba(62,39,17,.35), inset 0 1px 0 rgba(255,255,255,.7);
+  transition: transform .12s, box-shadow .12s;
 }
-.shop-item:hover:not(:disabled) { transform: scale(1.07); }
+.shop-item:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 8px 14px rgba(62,39,17,.4), inset 0 1px 0 rgba(255,255,255,.7);
+}
 .shop-item-scanned { opacity: 0.55; cursor: default; }
 .shop-item-emoji { font-size: 1.7rem; }
 .shop-item-tag {
@@ -4097,6 +4136,7 @@
   width: 190px; background: repeating-linear-gradient(180deg, #ffffff 0 26px, #f8fafc 26px 27px);
   border: 2px dashed #cbd5e1; border-radius: 6px; padding: 10px 12px;
   font-family: 'Courier New', monospace; font-size: 0.85rem; color: #334155;
+  box-shadow: 0 5px 12px rgba(15,23,42,.12);
 }
 .shop-receipt-wide { width: 220px; }
 .shop-receipt-title { text-align: center; font-weight: 800; letter-spacing: 2px; margin-bottom: 6px; }
@@ -4106,24 +4146,39 @@
 
 .shop-register {
   flex: 1; max-width: 260px; margin: 0 auto;
-  background: linear-gradient(180deg, #475569, #1e293b);
+  background: linear-gradient(180deg, #64748b, #334155 30%, #1e293b);
   border: 3px solid #0f172a; border-radius: 16px; padding: 14px;
+  box-shadow: 0 8px 18px rgba(15,23,42,.35), inset 0 2px 0 rgba(255,255,255,.25);
 }
 .shop-reg-display {
-  background: linear-gradient(180deg, #052e16, #14532d); color: #86efac;
+  background:
+    repeating-linear-gradient(180deg, rgba(255,255,255,.04) 0 2px, rgba(0,0,0,0) 2px 4px),
+    linear-gradient(180deg, #052e16, #14532d);
+  color: #86efac; text-shadow: 0 0 6px rgba(134,239,172,.75);
   font-family: 'Courier New', monospace; font-size: 1.5rem; font-weight: 800;
   text-align: right; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px;
   border: 2px solid #166534; letter-spacing: 2px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,.55);
 }
 .shop-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .shop-key {
-  background: linear-gradient(180deg, #f8fafc, #cbd5e1); border: 2px solid #94a3b8;
+  background: linear-gradient(180deg, #ffffff, #cbd5e1); border: 2px solid #94a3b8;
   border-radius: 10px; font-size: 1.15rem; font-weight: 800; color: #1e293b;
-  padding: 10px 0; cursor: pointer; transition: transform .1s;
+  padding: 10px 0; cursor: pointer; transition: transform .08s, box-shadow .08s;
+  box-shadow: 0 3px 0 #64748b, inset 0 1px 0 rgba(255,255,255,.8);
 }
-.shop-key:hover { transform: scale(1.06); }
-.shop-key-ok { background: linear-gradient(180deg, #86efac, #22c55e); border-color: #16a34a; color: #052e16; }
-.shop-key-back { background: linear-gradient(180deg, #fecaca, #f87171); border-color: #dc2626; color: #450a0a; }
+.shop-key:hover { transform: translateY(-1px); }
+.shop-key:active { transform: translateY(2px); box-shadow: 0 1px 0 #64748b; }
+.shop-key-ok {
+  background: linear-gradient(180deg, #a7f3d0, #22c55e); border-color: #16a34a;
+  color: #052e16; box-shadow: 0 3px 0 #15803d, inset 0 1px 0 rgba(255,255,255,.6);
+}
+.shop-key-ok:active { box-shadow: 0 1px 0 #15803d; }
+.shop-key-back {
+  background: linear-gradient(180deg, #fecaca, #f87171); border-color: #dc2626;
+  color: #450a0a; box-shadow: 0 3px 0 #b91c1c, inset 0 1px 0 rgba(255,255,255,.6);
+}
+.shop-key-back:active { box-shadow: 0 1px 0 #b91c1c; }
 
 .shop-choices { flex: 1; display: flex; flex-direction: column; gap: 10px; align-items: center; }
 .shop-choices-title { font-weight: 700; color: #475569; }
@@ -4138,10 +4193,12 @@
 .shop-pay-info { text-align: center; font-size: 1rem; color: #334155; }
 .shop-change-pile {
   min-height: 64px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
-  justify-content: center; background: linear-gradient(180deg, #f1f5f9, #e2e8f0);
-  border: 2px dashed #94a3b8; border-radius: 14px; padding: 8px;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 20%, #1c7a43, #14532d 75%, #0c3d20);
+  border: 3px solid #0c3d20; border-radius: 14px; padding: 8px;
+  box-shadow: inset 0 3px 10px rgba(0,0,0,.4), inset 0 -1px 0 rgba(255,255,255,.08);
 }
-.shop-pile-hint { color: #94a3b8; font-weight: 600; font-size: 0.9rem; }
+.shop-pile-hint { color: #86efac; font-weight: 600; font-size: 0.9rem; opacity: .85; }
 .shop-pile-money {
   background: none; border: none; padding: 0; cursor: pointer;
   animation: shopCoinDrop .35s ease backwards; transition: transform .12s;
@@ -4150,23 +4207,36 @@
 .shop-given { text-align: center; font-weight: 700; color: #475569; }
 .shop-drawer {
   display: flex; gap: 12px; justify-content: center; align-items: center;
-  background: linear-gradient(180deg, #7c5836, #5d3f22);
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 3px, rgba(0,0,0,0) 3px 40px),
+    linear-gradient(180deg, #8a6340, #5d3f22);
   border: 3px solid #47301a; border-radius: 14px; padding: 12px;
+  box-shadow: 0 6px 14px rgba(31,21,9,.4), inset 0 2px 0 rgba(255,255,255,.18);
   animation: shopDrawerOpen .4s ease backwards;
 }
 .shop-drawer-slot {
-  background: linear-gradient(180deg, #3f2c17, #2c1e0f); border: 2px solid #1f1509;
-  border-radius: 10px; padding: 8px; cursor: pointer; transition: transform .12s;
+  background: radial-gradient(ellipse at 50% 30%, #21302a, #131b17);
+  border: 2px solid #1f1509;
+  border-radius: 10px; padding: 8px; cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
   display: flex; align-items: center; justify-content: center; min-width: 72px; min-height: 60px;
+  box-shadow: inset 0 3px 8px rgba(0,0,0,.6), inset 0 -1px 0 rgba(255,255,255,.06);
 }
-.shop-drawer-slot:hover { transform: translateY(-4px); }
+.shop-drawer-slot:hover {
+  transform: translateY(-4px);
+  box-shadow: inset 0 3px 8px rgba(0,0,0,.6), 0 6px 12px rgba(31,21,9,.45);
+}
 .shop-give-btn { align-self: center; }
 
 .shop-cheer { flex-direction: column; align-items: center; gap: 8px; padding: 18px 0; }
 .shop-cheer-big { font-size: 3rem; animation: shopCheerJump .6s ease; }
 .shop-cheer-text { font-size: 1.15rem; font-weight: 700; color: #166534; }
 
-.shop-won { text-align: center; }
+.shop-won { text-align: center; position: relative; overflow: hidden; }
+.shop-float {
+  position: absolute; bottom: -10%; font-size: 1.5rem; opacity: 0;
+  pointer-events: none; animation: shopFloatUp 4s linear infinite;
+}
 .shop-won-title { font-size: 1.6rem; font-weight: 900; color: #1e293b; margin-bottom: 10px; }
 .shop-won-score {
   display: inline-block; font-size: 2.4rem; font-weight: 900; color: #1e293b;
@@ -4205,8 +4275,23 @@
   20%, 60% { transform: translateX(-7px); }
   40%, 80% { transform: translateX(7px); }
 }
-@keyframes shopCoinDrop { from { opacity: 0; transform: translateY(-18px) scale(.7); } to { opacity: 1; transform: none; } }
-@keyframes shopDrawerOpen { from { opacity: 0; transform: scaleY(.4); } to { opacity: 1; transform: none; } }
+@keyframes shopCoinDrop {
+  0% { opacity: 0; transform: translateY(-22px) scale(.7); }
+  70% { opacity: 1; transform: translateY(2px) scale(1.04); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes shopDrawerOpen { from { opacity: 0; transform: translateY(-14px) scaleY(.6); } to { opacity: 1; transform: none; } }
+@keyframes shopCustomerBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes shopDotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--shop-accent) 35%, transparent); }
+}
+@keyframes shopFloatUp {
+  0% { opacity: 0; transform: translateY(0) rotate(-6deg); }
+  15% { opacity: .8; }
+  75% { opacity: .8; }
+  100% { opacity: 0; transform: translateY(-330px) rotate(8deg); }
+}
 @keyframes shopGain {
   0% { opacity: 0; transform: translateY(8px) scale(.7); }
   25% { opacity: 1; transform: translateY(0) scale(1.1); }
@@ -4219,8 +4304,9 @@
   .shop-customer, .shop-customer-happy, .shop-item-check, .shop-receipt-line,
   .shop-stage-in, .shop-pile-money, .shop-drawer, .shop-cheer-big,
   .shop-won-score, .shop-recap-item, .shop-oops-msg, .shop-shake,
-  .shop-item-count { animation: none; }
+  .shop-item-count, .shop-dot-active { animation: none; }
   .shop-gain { animation: none; opacity: 1; } /* ends invisible → pin visible instead */
+  .shop-float { animation: none; } /* base opacity 0 keeps them hidden */
 }
 
 /* ── Mobile responsive ── */
@@ -4349,6 +4435,7 @@
   .drive-pedal { width: 108px; height: 78px; font-size: .92rem; }
 
   /* Little Shop */
+  .shop-card { padding-top: 48px; }
   .shop-level-grid { grid-template-columns: 1fr; gap: 10px; }
   .shop-stage { flex-direction: column; align-items: stretch; }
   .shop-shelf { grid-template-columns: repeat(4, 1fr); gap: 7px; }

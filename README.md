@@ -25,6 +25,8 @@ A colorful, interactive React app built for kids — packed with games, creative
 | ✏️ Doodle Dance | Freeform doodle activity with playful animated flourishes |
 | அ Tamil Tango | Learn the Tamil alphabet — a classroom in disguise. Four modes: **Learn Grid** (tap any of the 216 உயிர்மெய் cells to see how a consonant + vowel combine, e.g. க் + ஆ = கா → "kaa"), **Mix It!** (join a consonant + vowel to build the right letter; look-alike distractors reinforce the vowel signs), **Extract It!** (split a letter back into its parts), and **Listen & Find** (hear a letter, tap the right one). Every letter shows its romanized spelling and speaks with native-voice clips (`public/audio/tamil/`, cut from row recordings by `scripts/split-tamil-rows.py`) |
 | 🏃 Running Races | Tap-to-mash race against 2 AI runners along a zigzag track — pick a name, choose from 12 characters, and race at easy/medium/hard difficulty; rubberband AI keeps it close either way |
+| 🚗 Driving Cars | First-person driving game — pick a destination, then steer with a draggable wheel and GAS/BRAKE pedals down an S-curving road; curves drift you off-road if you don't steer, scenery rushes past, and a checkered finish line marks the arrival. Three trip lengths/difficulties |
+| 🛒 Little Shop | Money-math cashier game under a striped storefront awning — customers order items ("I need 2 ⚽ & 1 🍪 please!"), ring them up on the wooden shelf, total them on a glowing cash register, and count out change from a coin-and-bill drawer. Three levels ramp the math: whole-dollar addition with pick-the-total → whole-dollar quantities (decimal-free multiplication) → quarter prices with coin change |
 
 > Whack-a-Mole, Magic Loops, and Enchanted Garden exist in `src/components/` but are currently disabled (not in the `TABS` array).
 
@@ -62,7 +64,8 @@ consent banner needed). The script tag lives in `index.html`; the helpers are in
   moment: Memory Match, Number Detective (real solve only, not "give up"),
   Bubble Pop (timer ran out), Word Search, Unscramble, Family Feud, Tamil Tango
   (with `mode`), Drawing (Save), Making Boba (finished cup), Yummy Food (served,
-  with `dish`), Running Races (race result locked in, with `won`). Per game, drop-off ≈ `1 − (game_complete ÷ /game/<id> opens)` —
+  with `dish`), Running Races (race result locked in, with `won`), Driving Cars
+  (arrived), Little Shop (day finished, with `stars`). Per game, drop-off ≈ `1 − (game_complete ÷ /game/<id> opens)` —
   many opens but few completes means kids start it and lose interest. Umami's
   **Funnels** can chart open → complete directly. Open-ended toys (Dressing
   Dolls, My Room, Squishy, Joke, Riddle, Doodle) have no completion event — for
