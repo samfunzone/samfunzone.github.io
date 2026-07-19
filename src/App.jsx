@@ -19,6 +19,7 @@ import DoodleDance        from './components/DoodleDance';
 import TamilLetters       from './components/TamilLetters';
 import RunningRaces       from './components/RunningRaces';
 import DrivingCars        from './components/DrivingCars';
+import LittleShop         from './components/LittleShop';
 
 const TABS = [
   { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
@@ -39,6 +40,7 @@ const TABS = [
   { id: 'tamil',      label: 'அ Tamil Tango',         component: <TamilLetters /> },
   { id: 'runrace',    label: '🏃 Running Races',      component: <RunningRaces /> },
   { id: 'drivecars',  label: '🚗 Driving Cars',       component: <DrivingCars /> },
+  { id: 'shop',       label: '🛒 Little Shop',        component: <LittleShop /> },
 ];
 
 export default function App() {
