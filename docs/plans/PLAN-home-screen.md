@@ -30,7 +30,7 @@ render a big emoji above the name; keep `label` for analytics continuity:
 { id: 'boba', emoji: '🧋', name: 'Making Boba', label: '🧋 Making Boba', Component: MakingBoba },
 ```
 
-(If PLAN-code-split-games.md already ran, entries have `Component`; otherwise adapt.)
+(The code-split plan already ran: entries hold lazy component types in `Component`.)
 **Do not change any `id`** — they are Umami dimensions and become the hash values.
 
 ### 2. Navigation state driven by the URL hash

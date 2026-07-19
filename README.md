@@ -44,6 +44,9 @@ App runs at **http://localhost:3000**.
 - React 19 + Vite
 - Three.js (3D Squishy Stuff)
 - Plain CSS (no UI library) — mobile-responsive
+- Per-game code-splitting (`React.lazy`) — the initial load is just the app
+  shell (~62 kB gzip); each game's JS (including Three.js) downloads on first
+  open
 
 ## Analytics
 

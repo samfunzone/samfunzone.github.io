@@ -1,9 +1,9 @@
 # PLAN: Player progression (localStorage) — executable version
 
 **Rank: #2.** Biggest change to how the app feels for a returning kid: games remember you
-and adapt. The design groundwork already exists in `docs/progression-plan.md` (keep that
-doc; this file is the concrete build order). Do after PLAN-code-split-games.md (both touch
-game files; splitting first avoids rebasing this work).
+and adapt. The design groundwork already exists in `progression-plan.md` (same folder —
+keep that doc; this file is the concrete build order). The code-split plan has already
+landed, so game components are lazy-loaded; nothing here conflicts with that.
 
 ## Goal
 

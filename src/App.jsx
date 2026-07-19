@@ -1,46 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import { trackGameView } from './utils/analytics';
-import MemoryMatch   from './components/MemoryMatch';
-import JokeMachine   from './components/JokeMachine';
-import DrawingCanvas  from './components/DrawingCanvas';
-import SquishyStuff  from './components/SquishyStuff';
-import MakingBoba      from './components/MakingBoba';
-import MakingYummyFood from './components/MakingYummyFood';
-import DressingDolls   from './components/DressingDolls';
-import MakingYourRoom  from './components/MakingYourRoom';
-import FamilyFeud      from './components/FamilyFeud';
-import RiddleMachine      from './components/RiddleMachine';
-import NumberDetective    from './components/NumberDetective';
-import BubblePop          from './components/BubblePop';
-import WordSearch         from './components/WordSearch';
-import Unscramble         from './components/Unscramble';
-import DoodleDance        from './components/DoodleDance';
-import TamilLetters       from './components/TamilLetters';
-import RunningRaces       from './components/RunningRaces';
-import DrivingCars        from './components/DrivingCars';
-import LittleShop         from './components/LittleShop';
+
+// Every game is lazy-loaded so the initial bundle is just the app shell —
+// each game's chunk (notably Three.js inside Squishy Stuff) downloads on
+// first open. Lazy components must be created at module scope, never
+// inside App (that would remount the game on every render).
+const MemoryMatch      = lazy(() => import('./components/MemoryMatch'));
+const JokeMachine      = lazy(() => import('./components/JokeMachine'));
+const DrawingCanvas    = lazy(() => import('./components/DrawingCanvas'));
+const SquishyStuff     = lazy(() => import('./components/SquishyStuff'));
+const MakingBoba       = lazy(() => import('./components/MakingBoba'));
+const MakingYummyFood  = lazy(() => import('./components/MakingYummyFood'));
+const DressingDolls    = lazy(() => import('./components/DressingDolls'));
+const MakingYourRoom   = lazy(() => import('./components/MakingYourRoom'));
+const FamilyFeud       = lazy(() => import('./components/FamilyFeud'));
+const RiddleMachine    = lazy(() => import('./components/RiddleMachine'));
+const NumberDetective  = lazy(() => import('./components/NumberDetective'));
+const BubblePop        = lazy(() => import('./components/BubblePop'));
+const WordSearch       = lazy(() => import('./components/WordSearch'));
+const Unscramble       = lazy(() => import('./components/Unscramble'));
+const DoodleDance      = lazy(() => import('./components/DoodleDance'));
+const TamilLetters     = lazy(() => import('./components/TamilLetters'));
+const RunningRaces     = lazy(() => import('./components/RunningRaces'));
+const DrivingCars      = lazy(() => import('./components/DrivingCars'));
+const LittleShop       = lazy(() => import('./components/LittleShop'));
 
 const TABS = [
-  { id: 'memory',   label: '🧠 Memory Match',     component: <MemoryMatch /> },
-  { id: 'joke',     label: '😂 Joke Machine',     component: <JokeMachine /> },
-  { id: 'draw',     label: '🎨 Drawing',           component: <DrawingCanvas /> },
-  { id: 'squishy',  label: '🫧 Squishy Stuff',     component: <SquishyStuff /> },
-  { id: 'boba',     label: '🧋 Making Boba',       component: <MakingBoba /> },
-  { id: 'food',     label: '🍽️ Yummy Food',        component: <MakingYummyFood /> },
-  { id: 'dolls',    label: '🪆 Dressing Dolls',    component: <DressingDolls /> },
-  { id: 'room',     label: '🏠 My Room',            component: <MakingYourRoom /> },
-  { id: 'feud',     label: '📺 Family Feud',         component: <FamilyFeud /> },
-  { id: 'riddle',   label: '🧩 Riddle Machine',      component: <RiddleMachine /> },
-  { id: 'numdet',   label: '🔍 Number Detective',    component: <NumberDetective /> },
-  { id: 'bubbles',  label: '🐠 Bubble Pop',          component: <BubblePop /> },
-  { id: 'wordsearch', label: '🔍 Word Search',       component: <WordSearch /> },
-  { id: 'unscramble', label: '🔤 Unscramble',        component: <Unscramble /> },
-  { id: 'doodle',     label: '✏️ Doodle Dance',       component: <DoodleDance /> },
-  { id: 'tamil',      label: 'அ Tamil Tango',         component: <TamilLetters /> },
-  { id: 'runrace',    label: '🏃 Running Races',      component: <RunningRaces /> },
-  { id: 'drivecars',  label: '🚗 Driving Cars',       component: <DrivingCars /> },
-  { id: 'shop',       label: '🛒 Little Shop',        component: <LittleShop /> },
+  { id: 'memory',   label: '🧠 Memory Match',     Component: MemoryMatch },
+  { id: 'joke',     label: '😂 Joke Machine',     Component: JokeMachine },
+  { id: 'draw',     label: '🎨 Drawing',           Component: DrawingCanvas },
+  { id: 'squishy',  label: '🫧 Squishy Stuff',     Component: SquishyStuff },
+  { id: 'boba',     label: '🧋 Making Boba',       Component: MakingBoba },
+  { id: 'food',     label: '🍽️ Yummy Food',        Component: MakingYummyFood },
+  { id: 'dolls',    label: '🪆 Dressing Dolls',    Component: DressingDolls },
+  { id: 'room',     label: '🏠 My Room',            Component: MakingYourRoom },
+  { id: 'feud',     label: '📺 Family Feud',         Component: FamilyFeud },
+  { id: 'riddle',   label: '🧩 Riddle Machine',      Component: RiddleMachine },
+  { id: 'numdet',   label: '🔍 Number Detective',    Component: NumberDetective },
+  { id: 'bubbles',  label: '🐠 Bubble Pop',          Component: BubblePop },
+  { id: 'wordsearch', label: '🔍 Word Search',       Component: WordSearch },
+  { id: 'unscramble', label: '🔤 Unscramble',        Component: Unscramble },
+  { id: 'doodle',     label: '✏️ Doodle Dance',       Component: DoodleDance },
+  { id: 'tamil',      label: 'அ Tamil Tango',         Component: TamilLetters },
+  { id: 'runrace',    label: '🏃 Running Races',      Component: RunningRaces },
+  { id: 'drivecars',  label: '🚗 Driving Cars',       Component: DrivingCars },
+  { id: 'shop',       label: '🛒 Little Shop',        Component: LittleShop },
 ];
 
 export default function App() {
@@ -75,7 +80,9 @@ export default function App() {
       </nav>
 
       <div className="container">
-        {current?.component}
+        <Suspense fallback={<div className="game-loading">🎲 Loading…</div>}>
+          {current && <current.Component />}
+        </Suspense>
       </div>
 
       <footer className="footer">Made with ❤️ for awesome kids everywhere! 🌈</footer>

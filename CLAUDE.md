@@ -18,9 +18,9 @@ npm run lint     # ESLint (flat config, eslint.config.js)
 ```
 
 ## Adding a new game
-1. Create `src/components/MyGame.jsx`
+1. Create `src/components/MyGame.jsx` (must be the `export default`)
 2. Add its CSS section to the bottom of `src/App.css`
-3. Import and add an entry to the `TABS` array in `src/App.jsx`
+3. In `src/App.jsx`: add a module-scope `const MyGame = lazy(() => import('./components/MyGame'))` and a `TABS` entry `{ id, label, Component: MyGame }`
 
 ## Modernizing a game's visuals
 Use the project skill `.claude/skills/modernize-game/SKILL.md` (invoke with `/modernize-game`).
@@ -29,7 +29,7 @@ It covers the gradient-based photorealism recipe, CSS animation patterns, pitfal
 Reference implementation: `src/components/MakingBoba.jsx`.
 
 ## Architecture notes
-- **Tabs**: `App.jsx` renders one tab at a time from the `TABS` array — no router needed.
+- **Tabs**: `App.jsx` renders one tab at a time from the `TABS` array — no router needed. Every game is code-split: `React.lazy` consts at module scope (never inside `App` — that would remount the game each render), `TABS` stores the component type in `Component`, and the render site wraps `<current.Component />` in `<Suspense fallback={.game-loading}>`. Tab `id`s are Umami analytics dimensions — never rename them. `src/main.jsx` listens for `vite:preloadError` and reloads, so a stale open tab survives a redeploy's renamed chunk files. Don't add `manualChunks`/`rolldownOptions` chunking config — the dynamic imports split automatically (three.js lands in Squishy Stuff's chunk as its only importer).
 - **Confetti**: import `launchConfetti(x, y, count)` from `src/utils/confetti.js`. The `confettiFall` keyframe is defined in `App.css`.
 - **Three.js (Squishy Stuff)**: scene is created in a `useEffect` on phase change, cleaned up on unmount. Scale state is stored in a `ref` (not React state) so the render loop can read it without re-renders. Renderer is `alpha: true` with no `scene.background` — the dreamy gradient backdrop is CSS on `.three-mount` (don't reintroduce a scene background or it covers it). Material is `MeshPhysicalMaterial` with clearcoat for the jelly gloss; shadow map type must be `PCFShadowMap` (`PCFSoftShadowMap` was removed in three r183). **Emoji stage**: the outer `.sq-emoji-stage` owns the drop-in entrance (`key={emoji}` replays it) and the inner `.squishy-emoji-big` owns the inline `scale(ex, ey)` squish transform — never put an animation on the inner span (a running CSS animation overrides inline `transform`). The emoji squishes from `transform-origin: 50% 100%` (ground-planted) with a `.sq-emoji-shadow` ellipse whose `scaleX` tracks `ex` and opacity tracks `1/ey`; the stage's `margin-bottom` keeps the emoji clear of the bottom ↕ handle. `SquishBurst` particles replay via `key={burstId}` remount and carry base `opacity: 0` (they end invisible — reduced-motion safety); ambient `.sq-bubble` spans use deterministic sizes/timings and also rest at `opacity: 0`. Color swatches use inline radial gradients from `src/utils/color.js` helpers. All keyframes are `sq*` in App.css with a `prefers-reduced-motion` block disabling them.
 - **SVG dolls (Dressing Dolls)**: layer order matters — SceneBackground → HairBack → Body → Shoes → Clothing → HairFront → HeadSkin → FaceFeatures → Hat → Accessory. Key rules:
