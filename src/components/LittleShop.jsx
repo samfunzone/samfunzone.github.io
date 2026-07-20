@@ -165,6 +165,65 @@ function Money({ id }) {
   return DENOM[id].kind === 'coin' ? <Coin id={id} /> : <Bill id={id} />;
 }
 
+// Manager-level scratch space — plain scribble pad for working out sums by eye.
+// No save/undo: it unmounts on close and remounts fresh each round (key={round}).
+function ScratchPad({ onClose }) {
+  const canvasRef = useRef(null);
+  const drawing = useRef(false);
+  const lastPos = useRef(null);
+
+  const getPos = e => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  };
+
+  const clear = () => {
+    const canvas = canvasRef.current;
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const down = e => {
+    canvasRef.current.setPointerCapture(e.pointerId);
+    drawing.current = true;
+    lastPos.current = getPos(e);
+  };
+  const move = e => {
+    if (!drawing.current) return;
+    const pos = getPos(e);
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.strokeStyle = '#2d3748';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(lastPos.current.x, lastPos.current.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastPos.current = pos;
+  };
+  const up = () => { drawing.current = false; };
+
+  return (
+    <div className="shop-scratch-panel">
+      <div className="shop-scratch-head">
+        <span className="shop-scratch-title">📝 Scratch Pad</span>
+        <div className="shop-scratch-actions">
+          <button className="btn btn-blue shop-scratch-btn" onClick={clear}>🧹 Clear</button>
+          <button className="btn btn-orange shop-scratch-btn" onClick={onClose}>✖ Close</button>
+        </div>
+      </div>
+      <canvas
+        ref={canvasRef} width={520} height={220} className="shop-scratch-canvas"
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+      />
+    </div>
+  );
+}
+
 // Junior total options: the real total plus two near-miss distractors.
 function makeChoices(total) {
   const opts = new Set([total]);
@@ -193,6 +252,7 @@ export default function LittleShop() {
   const [streak, setStreak]   = useState(0);
   const [recap, setRecap]     = useState([]);        // [{ customer, total, pts, perfect }]
   const [gain, setGain]       = useState(null);      // { pts, key }
+  const [scratchOpen, setScratchOpen] = useState(false); // manager-level scribble pad
   const uidRef  = useRef(0);
   const timeouts = useRef([]);
 
@@ -232,6 +292,7 @@ export default function LittleShop() {
     setPile([]);
     setMiss(0);
     setOops(null);
+    setScratchOpen(false);
     setStep('scan');
   }
 
@@ -459,6 +520,12 @@ export default function LittleShop() {
 
       {oops && <div className="shop-oops-msg">⚠️ {oops.msg}</div>}
 
+      {level.id === 'manager' && (step === 'total' || step === 'pay') && !scratchOpen && (
+        <button className="btn btn-purple shop-scratch-toggle" onClick={() => setScratchOpen(true)}>
+          📝 Scratch Pad
+        </button>
+      )}
+
       {step === 'scan' && (
         <div className="shop-stage shop-stage-in" key={`scan-${round}`}>
           <div className="shop-shelf">
@@ -534,6 +601,7 @@ export default function LittleShop() {
               ))}
             </div>
           )}
+          {scratchOpen && <ScratchPad key={round} onClose={() => setScratchOpen(false)} />}
         </div>
       )}
 
@@ -564,6 +632,7 @@ export default function LittleShop() {
           <button className="btn btn-orange shop-give-btn" onClick={confirmChange}>
             ✋ Give Change
           </button>
+          {scratchOpen && <ScratchPad key={round} onClose={() => setScratchOpen(false)} />}
         </div>
       )}
 
