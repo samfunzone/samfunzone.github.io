@@ -14,8 +14,8 @@ dist
 # promoted into public/audio/tamil/ only after human sign-off.
 scripts/tamil-clips-staging/
 # Clips cut from the row recordings (scripts/split-tamil-rows.py --markers);
-# regenerable from scripts/downloaded-from-internet/ + scripts/row-markers.json.
-scripts/row-split-staging/
+# regenerable from scripts/downloaded-from-internet/ + scripts/row-markers*.json.
+scripts/row-split-staging*/
 dist-ssr
 *.local
 

@@ -26,43 +26,100 @@
                     bottom: 0; width: 2px; background: #ff5f8f; }
   .marker::after { content: '◆'; position: absolute; left: 4px; bottom: -2px;
                    color: #ff5f8f; font-size: 14px; }
+  .marker.marker-start::before { background: #4ddb8a; }
+  .marker.marker-start::after { content: '▶'; color: #4ddb8a; }
+  .marker.marker-end::before { background: #ff5f8f; }
+  .marker.marker-end::after { content: '◀'; color: #ff5f8f; }
   .marker.drag::before { background: #fff; }
-  .rowbtns { margin-top: 6px; display: flex; gap: 10px; }
+  .playhead { position: absolute; top: 0; bottom: 0; width: 16px;
+              margin-left: -8px; opacity: 0; z-index: 4;
+              pointer-events: none; cursor: ew-resize; touch-action: none; }
+  .playhead::before { content: ''; position: absolute; left: 7px; top: 0;
+                       bottom: 0; width: 2px; background: #fff;
+                       box-shadow: 0 0 6px #fff; }
+  .rowbtns { margin-top: 6px; display: flex; gap: 10px; align-items: center; }
+  label.adv-toggle { display: flex; align-items: center; gap: 6px;
+                      color: #9db4e8; font-size: 0.9rem; cursor: pointer; }
   button { background: #2b4a8f; color: #fff; border: none; border-radius: 8px;
            padding: 7px 14px; cursor: pointer; font-size: 0.9rem; }
   button:hover { background: #3a5fb4; }
+  button:disabled { opacity: 0.5; cursor: default; }
   #download { position: fixed; bottom: 16px; right: 20px; background: #3d7d4f;
               font-size: 1.05rem; padding: 12px 20px; z-index: 5;
               box-shadow: 0 4px 14px rgba(0,0,0,.5); }
 </style>
 </head>
 <body>
-<h1>Tamil row marker editor</h1>
+<h1>Tamil row marker editor<span id="src-tag"></span></h1>
 <p class="help">
-  Each pink ◆ marker is a boundary between two sounds. <b>Click a yellow label
-  to play just that slice.</b> Drag markers until every slice matches its label
-  (first marker = start of the first sound, last marker = end of the last sound).
-  Positions save in your browser automatically. When all rows are right, press
-  <b>⬇ Download marker times</b> and save <code>row-markers.json</code> into the
-  <code>scripts</code> folder.
+  Each pink ◆ marker is a boundary shared by two sounds. <b>Click a yellow label
+  to play just that slice</b> — a white cursor tracks playback, and you can drag
+  that cursor to scrub back and forth or use <b>⏸ Pause</b> to stop mid-slice.
+  Drag markers until every slice matches its label (first marker = start of the
+  first sound, last marker = end of the last sound). Positions save in your
+  browser automatically. When all rows are right, press
+  <b>⬇ Download marker times</b> and save <code id="out-file">row-markers.json</code>
+  into the <code>scripts</code> folder.
+</p>
+<p class="help">
+  If a row has extra noise or a stray retake between two sounds, check that
+  row's <b>🔧 Independent start/end</b> box — its markers split into a separate
+  <span style="color:#4ddb8a">▶ start</span> and <span style="color:#ff5f8f">◀ end</span>
+  per sound so you can drag around the junk instead of splitting it down the middle.
 </p>
 <div id="rows"></div>
 <button id="download">⬇ Download marker times</button>
 <script>
 const PPS = 80;             // pixels per second
-const LS_KEY = 'tamil-row-markers-v1';
+// ?src=v2 -> reads downloaded-from-internet/v2/, marker-init-v2.json,
+// saves/downloads as row-markers-v2.json, keeps its own localStorage bucket.
+// No ?src -> original downloaded-from-internet/ + marker-init.json (v1).
+const SRC = new URLSearchParams(location.search).get('src') || '';
+const AUDIO_DIR = 'downloaded-from-internet/' + (SRC ? SRC + '/' : '');
+const INIT_FILE = SRC ? `marker-init-${SRC}.json` : 'marker-init.json';
+const OUT_FILE = SRC ? `row-markers-${SRC}.json` : 'row-markers.json';
+const LS_KEY = 'tamil-row-markers-' + (SRC || 'v1');
 const store = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
 const state = {};           // file -> bounds[]
 let audio = null, stopTimer = null;
 
-fetch('marker-init.json').then(r => r.json()).then(data => {
+document.title += SRC ? ` (${SRC})` : '';
+document.getElementById('src-tag').textContent = SRC ? ` — ${SRC}` : '';
+document.getElementById('out-file').textContent = OUT_FILE;
+
+fetch(INIT_FILE).then(r => r.json()).then(data => {
   for (const row of data) buildRow(row);
 });
 
+function clonePairs(pairs) { return pairs.map(p => p.slice()); }
+
+// Collapse independent [start,end] pairs down to one shared boundary per
+// gap (the original single-marker model) by averaging each end/next-start.
+function collapseToShared(pairs) {
+  const b = [pairs[0][0]];
+  for (let i = 1; i < pairs.length; i++)
+    b.push((pairs[i - 1][1] + pairs[i][0]) / 2);
+  b.push(pairs[pairs.length - 1][1]);
+  return b.map(t => Math.round(t * 1000) / 1000);
+}
+
+// Expand a shared-boundary array (length N+1) into N independent pairs.
+function expandToPairs(shared) {
+  const p = [];
+  for (let i = 0; i < shared.length - 1; i++) p.push([shared[i], shared[i + 1]]);
+  return p;
+}
+
 function buildRow(row) {
-  const bounds = (store[row.file] && store[row.file].length === row.bounds.length)
-    ? store[row.file].slice() : row.bounds.slice();
-  state[row.file] = bounds;
+  const initPairs = clonePairs(row.bounds);
+  const saved = store[row.file];
+  // Per-row state: 'shared' (default, original single-marker UI) or
+  // 'advanced' (independent start/end per sound) — only meant for messy
+  // takes like a row with a stray retake mixed in.
+  let mode = (saved && saved.mode) || 'shared';
+  let shared = (saved && saved.shared) || collapseToShared(initPairs);
+  let pairs = (saved && saved.pairs) || expandToPairs(shared);
+  state[row.file] = () => mode === 'shared' ? expandToPairs(shared) : pairs;
   const W = Math.ceil(row.dur * PPS);
 
   const sec = document.createElement('section');
@@ -71,6 +128,11 @@ function buildRow(row) {
     <div class="rowbtns">
       <button class="playrow">▶ Play whole row</button>
       <button class="reset">Reset row markers</button>
+      <button class="pause-btn" disabled>⏸ Pause</button>
+      <label class="adv-toggle">
+        <input type="checkbox" class="adv-check"${mode === 'advanced' ? ' checked' : ''}>
+        🔧 Independent start/end
+      </label>
     </div>`;
   document.getElementById('rows').appendChild(sec);
   const wave = sec.querySelector('.wave');
@@ -81,34 +143,92 @@ function buildRow(row) {
   wave.appendChild(canvas);
   drawWave(row.file, canvas, row.dur);
 
-  const labels = [], markers = [];
+  const playhead = document.createElement('div');
+  playhead.className = 'playhead';
+  wave.appendChild(playhead);
+  dragifyPlayhead(playhead, wave);
+
+  const labels = [];
+  let sharedMarkers = [], startMarkers = [], endMarkers = [];
+
   for (let i = 0; i < row.labels.length; i++) {
     const l = document.createElement('div');
     l.className = 'seg-label';
     l.textContent = row.labels[i];
-    l.onclick = () => playSlice(row.file, bounds[i], bounds[i + 1], l);
+    l.onclick = () => {
+      const a = mode === 'shared' ? shared[i] : pairs[i][0];
+      const b = mode === 'shared' ? shared[i + 1] : pairs[i][1];
+      playSlice(row.file, a, b, l, playhead);
+    };
     wave.appendChild(l);
     labels.push(l);
   }
-  for (let i = 0; i < bounds.length; i++) {
-    const m = document.createElement('div');
-    m.className = 'marker';
-    wave.appendChild(m);
-    markers.push(m);
-    dragify(m, i);
+
+  buildMarkersForMode();
+
+  function clearMarkers() {
+    sharedMarkers.forEach(m => m.remove());
+    startMarkers.forEach(m => m.remove());
+    endMarkers.forEach(m => m.remove());
+    sharedMarkers = []; startMarkers = []; endMarkers = [];
   }
-  layout();
+
+  function buildMarkersForMode() {
+    clearMarkers();
+    if (mode === 'shared') {
+      for (let i = 0; i < shared.length; i++) {
+        const m = document.createElement('div');
+        m.className = 'marker';
+        wave.appendChild(m);
+        sharedMarkers.push(m);
+        dragifyShared(m, i);
+      }
+    } else {
+      for (let i = 0; i < pairs.length; i++) {
+        const ms = document.createElement('div');
+        ms.className = 'marker marker-start';
+        wave.appendChild(ms);
+        startMarkers.push(ms);
+        dragifyPair(ms, i, 0);
+
+        const me = document.createElement('div');
+        me.className = 'marker marker-end';
+        wave.appendChild(me);
+        endMarkers.push(me);
+        dragifyPair(me, i, 1);
+      }
+    }
+    layout();
+  }
 
   function layout() {
-    for (let i = 0; i < markers.length; i++)
-      markers[i].style.left = bounds[i] * PPS + 'px';
-    for (let i = 0; i < labels.length; i++) {
-      labels[i].style.left = bounds[i] * PPS + 2 + 'px';
-      labels[i].style.width = Math.max((bounds[i + 1] - bounds[i]) * PPS - 4, 10) + 'px';
+    if (mode === 'shared') {
+      for (let i = 0; i < sharedMarkers.length; i++)
+        sharedMarkers[i].style.left = shared[i] * PPS + 'px';
+      for (let i = 0; i < labels.length; i++) {
+        labels[i].style.left = shared[i] * PPS + 2 + 'px';
+        labels[i].style.width = Math.max((shared[i + 1] - shared[i]) * PPS - 4, 10) + 'px';
+      }
+    } else {
+      for (let i = 0; i < pairs.length; i++) {
+        startMarkers[i].style.left = pairs[i][0] * PPS + 'px';
+        endMarkers[i].style.left = pairs[i][1] * PPS + 'px';
+        labels[i].style.left = pairs[i][0] * PPS + 2 + 'px';
+        labels[i].style.width = Math.max((pairs[i][1] - pairs[i][0]) * PPS - 4, 10) + 'px';
+      }
     }
   }
 
-  function dragify(m, i) {
+  function persist() {
+    store[row.file] = {
+      mode,
+      shared: shared.map(t => Math.round(t * 1000) / 1000),
+      pairs: pairs.map(p => p.map(t => Math.round(t * 1000) / 1000)),
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(store));
+  }
+
+  function dragifyShared(m, i) {
     m.addEventListener('pointerdown', e => {
       e.preventDefault();
       m.setPointerCapture(e.pointerId);
@@ -116,49 +236,182 @@ function buildRow(row) {
       const move = ev => {
         const x = ev.clientX - wave.getBoundingClientRect().left;
         let t = x / PPS;
-        const lo = i > 0 ? bounds[i - 1] + 0.05 : 0;
-        const hi = i < bounds.length - 1 ? bounds[i + 1] - 0.05 : row.dur;
-        bounds[i] = Math.min(Math.max(t, lo), hi);
+        const lo = i > 0 ? shared[i - 1] + 0.05 : 0;
+        const hi = i < shared.length - 1 ? shared[i + 1] - 0.05 : row.dur;
+        shared[i] = Math.min(Math.max(t, lo), hi);
         layout();
       };
       const up = () => {
         m.classList.remove('drag');
         m.removeEventListener('pointermove', move);
         m.removeEventListener('pointerup', up);
-        store[row.file] = bounds.map(t => Math.round(t * 1000) / 1000);
-        localStorage.setItem(LS_KEY, JSON.stringify(store));
+        persist();
       };
       m.addEventListener('pointermove', move);
       m.addEventListener('pointerup', up);
     });
   }
 
-  sec.querySelector('.playrow').onclick = () =>
-    playSlice(row.file, bounds[0], bounds[bounds.length - 1], null);
+  function dragifyPair(m, i, which) {
+    m.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      m.setPointerCapture(e.pointerId);
+      m.classList.add('drag');
+      const move = ev => {
+        const x = ev.clientX - wave.getBoundingClientRect().left;
+        let t = x / PPS;
+        const lo = which === 1 ? pairs[i][0] + 0.03 : 0;
+        const hi = which === 0 ? pairs[i][1] - 0.03 : row.dur;
+        pairs[i][which] = Math.min(Math.max(t, lo), hi);
+        layout();
+      };
+      const up = () => {
+        m.classList.remove('drag');
+        m.removeEventListener('pointermove', move);
+        m.removeEventListener('pointerup', up);
+        persist();
+      };
+      m.addEventListener('pointermove', move);
+      m.addEventListener('pointerup', up);
+    });
+  }
+
+  const pauseBtn = sec.querySelector('.pause-btn');
+  pauseBtns.push({ playhead, btn: pauseBtn });
+  pauseBtn.onclick = () => { if (activePlayhead === playhead) togglePause(); };
+
+  sec.querySelector('.playrow').onclick = () => {
+    const a = mode === 'shared' ? shared[0] : pairs[0][0];
+    const b = mode === 'shared' ? shared[shared.length - 1] : pairs[pairs.length - 1][1];
+    playSlice(row.file, a, b, null, playhead);
+  };
   sec.querySelector('.reset').onclick = () => {
-    bounds.splice(0, bounds.length, ...row.bounds);
+    shared = collapseToShared(initPairs);
+    pairs = expandToPairs(shared);
     delete store[row.file];
     localStorage.setItem(LS_KEY, JSON.stringify(store));
-    layout();
+    buildMarkersForMode();
+  };
+  sec.querySelector('.adv-check').onchange = e => {
+    if (e.target.checked) {
+      pairs = expandToPairs(shared);
+      mode = 'advanced';
+    } else {
+      shared = collapseToShared(pairs);
+      mode = 'shared';
+    }
+    persist();
+    buildMarkersForMode();
   };
 }
 
-function playSlice(file, a, b, label) {
-  if (audio) { audio.pause(); clearTimeout(stopTimer); }
+let rafId = null, activePlayhead = null, activeLabel = null, curA = 0, curB = 0;
+const pauseBtns = []; // { playhead, btn } for every row, so each row's own
+                       // pause button reflects whether *that* row is playing
+
+function deactivatePlayhead(playhead) {
+  if (!playhead) return;
+  playhead.style.opacity = 0;
+  playhead.style.pointerEvents = 'none';
+}
+
+function playSlice(file, a, b, label, playhead) {
+  if (audio) audio.pause();
+  clearTimeout(stopTimer);
+  if (rafId) cancelAnimationFrame(rafId);
+  if (activePlayhead && activePlayhead !== playhead) deactivatePlayhead(activePlayhead);
   document.querySelectorAll('.seg-label.playing')
     .forEach(x => x.classList.remove('playing'));
-  audio = new Audio('downloaded-from-internet/' + file);
+  audio = new Audio(AUDIO_DIR + file);
   audio.currentTime = a;
+  curA = a; curB = b;
+  activeLabel = label || null;
+  activePlayhead = playhead || null;
   if (label) label.classList.add('playing');
-  const clear = () => label && label.classList.remove('playing');
-  audio.onended = clear;
+  audio.onended = finishPlayback;
+  resumePlayback();
+}
+
+function resumePlayback() {
+  if (!audio) return;
   audio.play().then(() => {
-    stopTimer = setTimeout(() => { audio.pause(); clear(); }, (b - a) * 1000);
-  }).catch(clear);
+    scheduleStop();
+    animatePlayhead();
+    updatePauseBtn();
+  }).catch(finishPlayback);
+}
+
+function scheduleStop() {
+  clearTimeout(stopTimer);
+  const remainMs = Math.max((curB - audio.currentTime) * 1000, 0);
+  stopTimer = setTimeout(() => { audio.pause(); finishPlayback(); }, remainMs);
+}
+
+function animatePlayhead() {
+  if (!activePlayhead) return;
+  activePlayhead.style.opacity = 1;
+  activePlayhead.style.pointerEvents = 'auto';
+  const tick = () => {
+    activePlayhead.style.left = (audio.currentTime * PPS) + 'px';
+    rafId = requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+function finishPlayback() {
+  if (activeLabel) activeLabel.classList.remove('playing');
+  deactivatePlayhead(activePlayhead);
+  if (rafId) cancelAnimationFrame(rafId);
+  updatePauseBtn();
+}
+
+function togglePause() {
+  if (!audio) return;
+  if (audio.paused) {
+    resumePlayback();
+  } else {
+    audio.pause();
+    clearTimeout(stopTimer);
+    if (rafId) cancelAnimationFrame(rafId);
+    updatePauseBtn();
+  }
+}
+
+function updatePauseBtn() {
+  for (const { playhead, btn } of pauseBtns) {
+    const isActive = !!audio && playhead === activePlayhead;
+    btn.disabled = !isActive;
+    btn.textContent = (isActive && !audio.paused) ? '⏸ Pause' : '▶ Resume';
+  }
+}
+
+function dragifyPlayhead(playhead, wave) {
+  playhead.addEventListener('pointerdown', e => {
+    if (activePlayhead !== playhead || !audio) return;
+    e.preventDefault();
+    playhead.setPointerCapture(e.pointerId);
+    const wasPlaying = !audio.paused;
+    audio.pause();
+    clearTimeout(stopTimer);
+    if (rafId) cancelAnimationFrame(rafId);
+    const move = ev => {
+      const x = ev.clientX - wave.getBoundingClientRect().left;
+      const t = Math.min(Math.max(x / PPS, curA), curB);
+      audio.currentTime = t;
+      playhead.style.left = t * PPS + 'px';
+    };
+    const up = () => {
+      playhead.removeEventListener('pointermove', move);
+      playhead.removeEventListener('pointerup', up);
+      if (wasPlaying) resumePlayback(); else updatePauseBtn();
+    };
+    playhead.addEventListener('pointermove', move);
+    playhead.addEventListener('pointerup', up);
+  });
 }
 
 function drawWave(file, canvas, dur) {
-  fetch('downloaded-from-internet/' + file)
+  fetch(AUDIO_DIR + file)
     .then(r => r.arrayBuffer())
     .then(buf => new (window.AudioContext || window.webkitAudioContext)()
       .decodeAudioData(buf))
@@ -188,12 +441,12 @@ function drawWave(file, canvas, dur) {
 document.getElementById('download').onclick = () => {
   const out = {};
   for (const f in state)
-    out[f] = state[f].map(t => Math.round(t * 1000) / 1000);
+    out[f] = state[f]().map(p => p.map(t => Math.round(t * 1000) / 1000));
   const blob = new Blob([JSON.stringify(out, null, 1)],
     { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'row-markers.json';
+  a.download = OUT_FILE;
   a.click();
 };
 </script>
